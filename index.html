@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>UCO Campus Map Service</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,300" rel="stylesheet" type="text/css">
+    
+    <style>
+        body {
+          color: #404040;
+          font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+          margin: 0;
+          padding: 0;
+          -webkit-font-smoothing: antialiased;
+          height: 100%;
+          overflow: hidden;
+        }
+        
+        * {
+          -webkit-box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          box-sizing: border-box;
+        }
+
+        h1 {
+          font-size: 20px;
+          margin: 0;
+          margin-top: 20px;
+          font-weight: 400;
+          line-height: 20px;
+          padding: 20px 2px;
+        }
+
+        a {
+          color: #404040;
+          text-decoration: none;
+        }
+
+        a:hover {
+          color: #101010;
+        }
+
+        #sidebar {
+          width: 20%;
+        }
+        
+        #header { 
+          margin-left: 10px;
+          font-family: 'Open Sans';
+          font-size: 1.4em;
+        }
+        
+        /*
+        #map {
+          position: absolute;
+          margin: 50px;
+          margin-top: 80px;
+          margin-left:200px;
+          top: 0;
+          bottom: 0;
+          width: 70%;
+          float: right;
+        }
+        */
+        
+        #map {
+          border-left: 1px solid #fff;
+          position: absolute;
+          left: 20%;
+          width: 60%;
+          top: 0;
+          bottom: 0;
+        }
+                                     
+        #instructions {
+          position: absolute;
+          margin: 10px;
+          width: 10%;
+          top: 0;
+          bottom: 0%;
+          padding: 20px;
+          background-color: rgba(255, 255, 255, 0.9);
+          overflow-y: scroll;
+          font-family: sans-serif;
+          font-size: 0.8em;
+          line-height: 2em;
+        }
+
+        .duration {
+          font-size: 2em;
+        }
+        /*
+         #functionfield {
+          position: absolute;
+          margin: 10px;
+          margin-left: 1165px;
+          width: 12%;
+          top: 0;
+          bottom: 0%;
+          padding: 20px;
+          background-color: rgba(255, 255, 255, 0.9);
+          font-family: sans-serif;
+          font-size: 0.8em;
+          line-height: 2em;
+        */
+        
+        #functionfield {
+          position: absolute;   /* need to have position absolute, otherwise just fix in the left side */
+          left: 80%;
+          margin-left: 10px;
+          width: 20%;
+          top: 0;
+          bottom: 0;
+          font-family: 'Open Sans';
+          font-size: 0.8em;
+        }
+        
+        .pad2 {                   /* add to the bar will have padding on border */
+          padding: 20px;
+          -webkit-box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          box-sizing: border-box;
+        }
+        
+        .heading {
+          background: #fff;
+          border-bottom: 1px solid #eee;
+          height: 60px;
+          line-height: 60px;
+          padding: 0 10px;
+        }
+
+        .listings {
+          height: 100%;
+          overflow: auto;
+          padding-bottom: 60px;
+        }
+
+        .listings .item {
+          font-size: 11px;
+          display: block;
+          border-bottom: 1px solid #eee;
+          padding: 10px;
+          text-decoration: none;
+        }
+
+        .listings .item:last-child { border-bottom: none; }
+
+        .listings .item .title {
+          font-size: 12px;
+          display: block;
+          color: #527da5;
+          font-weight: 700;
+        }
+
+        .listings .item .title small { 
+            font-weight: 400; 
+        }
+
+        .listings .item.active .title,
+        .listings .item .title:hover { color: #8cc63f; }
+
+        .listings .item.active {
+          background-color: #f8f8f8;
+        }
+
+        ::-webkit-scrollbar {
+          width: 3px;
+          height: 3px;
+          border-left: 0;
+          background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-track {
+          background: none;
+        }
+
+        /*::-webkit-scrollbar-thumb {
+          background: #00853e;
+          border-radius: 0;
+        }*/
+
+        .clearfix { display: block; }
+
+        .clearfix::after {
+          content: '.';
+          display: block;
+          height: 0;
+          clear: both;
+          visibility: hidden;
+        }
+        
+        /* Marker tweaks */
+        .mapboxgl-popup-close-button {
+          display: none;
+        }
+
+        .mapboxgl-popup-content {
+          font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+          padding: 0;
+          width: 180px;
+        }
+
+        .mapboxgl-popup-content-wrapper {
+          padding: 1%;
+        }
+
+        .mapboxgl-popup-content h3 {
+          background: #419bfc;
+          color: #fff;
+          margin: 0;
+          display: block;
+          padding: 10px;
+          border-radius: 3px 3px 0 0;
+          font-weight: 700;
+          margin-top: -15px;
+        }
+
+        .mapboxgl-popup-content h4 {
+          margin: 0;
+          display: block;
+          padding: 10px;
+          font-weight: 400;
+        }
+
+        .mapboxgl-popup-content div {
+          padding: 10px;
+        }
+
+        .mapboxgl-container .leaflet-marker-icon {
+          cursor: pointer;
+        }
+
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+          margin-top: 15px;
+        }
+
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+          border-bottom-color: #91c949;
+        }
+
+        }
+    </style>
+  </head>
+  <body>
+    <div id='header'><h4>UCO Campus Map Service</h4></div>
+    <img src ="https://upload.wikimedia.org/wikipedia/commons/a/a7/UCO-logo.gif" hspace= "15" width=200 height=50> <!--hspace = margin-left5px-->
+    <div id='map' class='map pad2'></div>
+    <div class='sidebar'>
+      <div class='heading'> <!--heading is already a CSS specification-->
+        <h1>Commonly used locations</h1>
+      </div>
+      <div id='listings' class='listings'></div>
+    </div>
+    <!--<div id='instructions' style="background-color: aliceblue"></div>          // comment out instruction sidebar         --> 
+    <div id='functionfield' class='functionfield pad2' style="background-color:antiquewhite">
+        <!--<b><h3>testing field</h3></b>--> 
+        <br>
+        
+        <b><h3><h>Building Name:</h></h3></b>
+        <input text=""><br><br>
+        <button>Search</button><br>
+        <p></p>
+        <br><br>
+        <b><h>Start Point:</h></b><br>
+        <input text="">
+        <h></h><br>
+        <b><h>End Point:</h></b><br>
+        <input text=""><br>
+        <input type='checkbox'>Wheelchair Accessible<br><br>
+        <button>Navigate</button>
+        
+    </div>   
+
+    <div style="position: absolute; bottom: 5px; right:5px; background-color:antiquewhite; font-family: 'Open Sans'; font-size: 0.8em;">
+        <a href="link" target="mid_col">Contact the Developers</a>
+    </div>
+
+    <script>  // add the JavaScript here
+        
+        // This will let you use the .remove() function later on   //for old browser compatability
+        if (!('remove' in Element.prototype)) {
+          Element.prototype.remove = function() {
+            if (this.parentNode) {
+              this.parentNode.removeChild(this);
+            }
+          };
+        }
+        
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZnJlbnp5ZHJrIiwiYSI6ImNqdDF5cGo3bjBqYnI0NG1qbzhnMmx0NmYifQ.K5MK4GArCk5nbQFbisJOFg';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/frenzydrk/cjtvq39zo16qn1fq5058v0elh', // my style
+            center: [-97.47058579306456, 35.65558438585279], // starting position
+            zoom: 12
+        });
+        
+
+        // set the bounds of the map
+        var bounds = [[-97.47647766407945, 35.65255693420957], [-97.46423070697964, 35.66388254641362]];
+        map.setMaxBounds(bounds);
+
+        // initialize the map canvas to interact with later
+        var canvas = map.getCanvasContainer();
+
+        // an arbitrary start will always be the same
+        // only the end or destination will change
+        var start = [-97.47276891379411, 35.653974723160744];
+        var global_end = [-97.47141360688943, 35.654825767816476];
+        var global_coords_test;
+        var global_count = 0;
+
+        function easing(t) {
+            return t * (2 - t);
+        }
+        // pixels the map pans when the up or down arrow is clicked
+        var deltaDistance = 100;
+
+        // degrees the map rotates when the left or right arrow is clicked
+        var deltaDegrees = 25;
+        
+        function buildLocationList(data) { // function for building building locations list
+          // Iterate through the list of stores
+          for (i = 0; i < data.length; i++) {
+            var currentFeature = data[i];
+            // Shorten data.feature.properties to `prop` so we're not
+            // writing this long form over and over again.
+            var prop = currentFeature.properties;
+            // Select the listing container in the HTML and append a div
+            // with the class 'item' for each store
+            var listings = document.getElementById('listings');
+            var listing = listings.appendChild(document.createElement('div'));
+            listing.className = 'item';
+            listing.id = 'listing-' + i;
+
+            // Create a new link with the class 'title' for each store
+            // and fill it with the store address
+            var link = listing.appendChild(document.createElement('a'));
+            link.href = '#';
+            link.className = 'title';
+            link.dataPosition = i;
+            link.innerHTML = prop.Name;
+
+            
+            // Add an event listener for the links in the sidebar listing                  // add listener for the listing link
+            link.addEventListener('click', function(e) {
+              // Update the currentFeature to the store associated with the clicked link
+              var clickedListing = data[this.dataPosition]; // get the Listing Building 
+              // 1. Fly to the point associated with the clicked link
+              flyToStore(clickedListing);
+              // 2. Close all other popups and display popup for clicked store
+              createPopUp(clickedListing);
+              // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+              var activeItem = document.getElementsByClassName('active');
+              if (activeItem[0]) {
+                activeItem[0].classList.remove('active');
+              }
+              this.parentNode.classList.add('active');
+            });
+            
+            
+            // Create a new div with the class 'details' for each store
+            // and fill it with the city and phone number
+            var details = listing.appendChild(document.createElement('div'));
+            details.innerHTML = prop.city;
+            if (prop.phone) {
+              details.innerHTML += ' · ' + prop.phoneFormatted;
+            }
+          }
+        }
+        
+        function flyToStore(currentFeature) {
+          map.flyTo({
+            animate:(false),
+            center: currentFeature.geometry.coordinates[0][0],
+            zoom: 16
+          });
+        }
+
+        function createPopUp(currentFeature) {
+          var popUps = document.getElementsByClassName('mapboxgl-popup');
+          // Check if there is already a popup on the map and if so, remove it
+          if (popUps[0]) popUps[0].remove();
+
+          var popup = new mapboxgl.Popup({ closeOnClick: true }) // close on click <- last time it's false...
+            .setLngLat(currentFeature.geometry.coordinates[0][0])
+            .setHTML('<h3>' + currentFeature.properties.Name + '</h3>' +
+              '<h4> (...) </h4>')
+            .addTo(map);
+        }
+        
+        
+        // this is where the code for the next step will go _Add your route request function
+        // create a function to make a directions request
+        function getRoute(end) {
+          // make a directions request using cycling profile
+          // an arbitrary start will always be the same
+          // only the end or destination will change
+          var start = [-97.47276891379411, 35.653974723160744];
+          var url = 'https://api.mapbox.com/directions/v5/mapbox/walking/' + start[0] + ',' + start[1] + ';' + end[0] + ',' + end[1] + '?steps=true&geometries=geojson&access_token=' + mapboxgl.accessToken;
+
+          // make an XHR request https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+          var req = new XMLHttpRequest();
+          req.responseType = 'json';
+          req.open('GET', url, true);
+          req.onload = function() {
+            var data = req.response.routes[0];
+            var route = data.geometry.coordinates;
+            var geojson = {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: route
+              }
+            };
+            // if the route already exists on the map, reset it using setData
+            if (map.getSource('route')) {
+              map.getSource('route').setData(geojson);
+            } else { // otherwise, make a new request
+              map.addLayer({
+                id: 'route',
+                type: 'line',
+                source: {
+                  type: 'geojson',
+                  data: {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                      type: 'LineString',
+                      coordinates: geojson
+                    }
+                  }
+                },
+                layout: {
+                  'line-join': 'round',
+                  'line-cap': 'round'
+                },
+                paint: {
+                  'line-color': '#3887be',
+                  'line-width': 5,
+                  'line-opacity': 0.75
+                }
+              });
+            }
+            // add turn instructions here at the end
+            // get the sidebar and add the instructions
+            var instructions = document.getElementById('instructions');
+            var steps = data.legs[0].steps;
+
+            var tripInstructions = [];
+            for (var i = 0; i < steps.length; i++) {
+              tripInstructions.push('<br><li>' + steps[i].maneuver.instruction) + '</li>';
+              instructions.innerHTML = '<br><span class="duration">Walking duration: ' + Math.floor(data.duration / 60) + ' min 🚶 </span>' + tripInstructions;
+            }
+              
+              
+          };
+          req.send();
+        }
+
+        map.on('load', function() {
+            map.getCanvas().focus();
+            
+
+            map.panBy([0, 350], {   //auto go down 350 manually because of UCO focus
+                easing: easing
+            });
+            
+            // Add the data to your map as a layer (GEOJSON file)
+            // // don't have to add a layer... mapbox studio has it... failed to use query source... no idea about that...
+            var buildings_arr = map.queryRenderedFeatures({layers: ['uco-buildings']});
+            
+            
+            
+            global_coords_test = buildings_arr;
+            
+            if (!buildings_arr.length) {
+              return;
+            }
+            
+            var buildings = [];
+            var j=0;
+            var notOK = false;
+            
+            for (i=0; i<buildings_arr.length; i++){
+                notOK = false;
+                if (buildings_arr[i].properties.Name != undefined){
+                    for (t=0; t<buildings.length;t++){                          // somehow it will repeat sometimes, check everytime before insert
+                        if (buildings_arr[i].properties.Name == buildings[t].properties.Name){
+                            notOK = true;
+                            break;
+                        }
+                    }
+                    if (notOK == false){
+                        buildings[j]=buildings_arr[i];
+                        j = j+1;
+                    }
+                }
+            }
+            
+            global_coords_test = buildings;
+            
+            
+            buildLocationList(buildings);
+            
+            
+            map.getCanvas().addEventListener('keydown', function(e) {
+                e.preventDefault();
+                if (e.which === 38) { // up
+                    map.panBy([0, -deltaDistance], {
+                    easing: easing
+                    });
+                } else if (e.which === 40) { // down
+                    map.panBy([0, deltaDistance], {
+                    easing: easing
+                    });
+                } else if (e.which === 37) { // left
+                    map.easeTo({
+                    bearing: map.getBearing() - deltaDegrees,
+                    easing: easing
+                    });
+                } else if (e.which === 39) { // right
+                    map.easeTo({
+                    bearing: map.getBearing() + deltaDegrees,
+                    easing: easing
+                    });
+                }
+            }, true);
+            
+          // make an initial directions request that
+          // starts and ends at the same location
+          getRoute(start);
+
+          // Add starting point to the map
+          map.addLayer({
+            id: 'point',
+            type: 'circle',
+            source: {
+              type: 'geojson',
+              data: {
+                type: 'FeatureCollection',
+                features: [{
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {
+                    type: 'Point',
+                    coordinates: start
+                  }
+                }
+                ]
+              }
+            },
+            paint: {
+              'circle-radius': 4, //start point radius
+              'circle-color': '#3887be' //start point color
+            }
+          });
+          // this is where the code from the next step will go _Add your origin and get your destination
+              map.on('click', function(e) {
+                  
+                  var features = map.queryRenderedFeatures(e.point, {
+                    layers: ['uco-buildings (1)'] // replace this with the name of the layer
+                  });
+
+                  if (!features.length) {
+                    return;
+                  }
+
+                  var feature = features[0];
+
+                  //global_coords_test = feature.geometry.coordinates[0][0];
+                  
+                  /*var popup = new mapboxgl.Popup({ offset: [0, -15] })                      // this popup is good, but uniform to list popup
+                    .setLngLat(feature.geometry.coordinates[0][0])
+                    .setHTML('<h3>' + feature.properties.Name + '</h3><p>' + '</p>')
+                    .setLngLat(feature.geometry.coordinates[0][0])
+                    .addTo(map);
+                  */
+                  
+                  // 1. Fly to the point
+        //          flyToStore(feature);
+                  // 2. Close all other popups and display popup for clicked store
+                  createPopUp(feature);
+                  // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+                  var activeItem = document.getElementsByClassName('active');
+                  if (activeItem[0]) {
+                    activeItem[0].classList.remove('active');
+                  }
+                  // Find the index of the store.features that corresponds to the clickedPoint that fired the event listener
+                  var selectedFeature = feature.properties.Name;
+  
+                  for (var i = 0; i < buildings.length; i++) {
+                    if (buildings[i].properties.Name === selectedFeature) {
+                      selectedFeatureIndex = i;
+                    }
+                  }
+                  // Select the correct list item using the found index and add the active class
+                  var listing = document.getElementById('listing-' + selectedFeatureIndex);
+                  listing.classList.add('active');
+                  
+                  
+                  
+                  /* THIS PART IS TO GET END POINT FOR GET ROUTE
+                  var coordsObj = e.lngLat;
+                  canvas.style.cursor = '';
+                  var coords = Object.keys(coordsObj).map(function(key) {
+                    return coordsObj[key];
+                  });
+                  var end = {
+                    type: 'FeatureCollection',
+                    features: [{
+                      type: 'Feature',
+                      properties: {},
+                      geometry: {
+                        type: 'Point',
+                        coordinates: coords
+                      }
+                    }
+                    ]
+                  };
+                  if (map.getLayer('end')) {
+                    map.getSource('end').setData(end);
+                  } else {
+                    map.addLayer({
+                      id: 'end',
+                      type: 'circle',
+                      source: {
+                        type: 'geojson',
+                        data: {
+                          type: 'FeatureCollection',
+                          features: [{
+                            type: 'Feature',
+                            properties: {},
+                            geometry: {
+                              type: 'Point',
+                              coordinates: coords
+                            }
+                          }]
+                        }
+                      },
+                      paint: {
+                        'circle-radius': 4, //end point radius
+                        'circle-color': '#f30' //end point color
+                      }
+                });
+              }
+              global_end = coords;
+              getRoute(coords);
+              
+              */
+            });
+        });
+    </script>
+
+  </body>
+</html>
