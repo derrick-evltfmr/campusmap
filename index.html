@@ -33,6 +33,11 @@
           line-height: 20px;
           padding: 20px 2px;
         }
+        
+        s1 {
+          font-size: 10px;
+          font-family: 'Open Sans';
+        }
 
         a {
           color: #404040;
@@ -202,6 +207,7 @@
           font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
           padding: 0;
           width: 180px;
+          line-height: 100%;  /* this will overwrite s1*/
         }
 
         .mapboxgl-popup-content-wrapper {
@@ -213,7 +219,7 @@
           color: #fff;
           margin: 0;
           display: block;
-          padding: 10px;
+          padding: 15px;
           border-radius: 3px 3px 0 0;
           font-weight: 700;
           margin-top: -15px;
@@ -227,7 +233,8 @@
         }
 
         .mapboxgl-popup-content div {
-          padding: 10px;
+          padding: 0px;
+          line-height: 2%
         }
 
         .mapboxgl-container .leaflet-marker-icon {
@@ -242,6 +249,40 @@
           border-bottom-color: #91c949;
         }
 
+        .popupbutton {
+          margin-left: 30px; /*center 34px */
+          background-color: whitesmoke; /* light gray */
+          border: none;
+          color: #474746;
+          padding: 4px 12px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 12px;
+          border-radius: 10px;
+          -webkit-transition-duration: 0.4s; /* Safari */
+          transition-duration: 0.4s;
+          border: 1.5px solid #474746;
+          white-space: nowrap;
+        }
+        .popupbutton:hover {
+          margin-left: 0px;
+          background-color: #999997; /* light gray */
+          border: none;
+          color: white;
+          padding: 12px 29px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 15px;
+          border-radius: 12px;
+          -webkit-transition-duration: 0.4s; /* Safari */
+          transition-duration: 0.4s;
+          border: 2px solid #474746;
+        }
+        
+
+        
         }
     </style>
   </head>
@@ -385,12 +426,54 @@
           // Check if there is already a popup on the map and if so, remove it
           if (popUps[0]) popUps[0].remove();
 
+          var imageSrc;
+          var textDescription;
+          if (currentFeature.properties.Name == "Visitor Parking Lot"){
+              imageSrc="https://i.imgur.com/kJh7vVx.jpg";
+              textDescription = " ";
+          }
+          else if (currentFeature.properties.Name == "Chambers Library (LIB)"){
+              imageSrc="https://sites.uco.edu/administration/facilities/uco-eg-buildings/historic-buildings/lib.jpg";
+              textDescription = "<s1>•	Built 1966 <br>•	281,433 square feet<br>•	Major Addition in 1995, minor interior renovations in recent years. Renovation in 2000 and 2003 to capture usable space in the overhang area of the first floor for College of Education units<br></s1> ";
+          }
+          else if (currentFeature.properties.Name == "Wellness Center (Gym) (WEL)"){
+              imageSrc="https://sites.uco.edu/administration/facilities/uco-eg-buildings/historic-buildings/wel.jpg";
+              textDescription = "<s1>•	Built 2003 <br>•	75,310 square feet<br>•	The facility contains the student recreational facilities, the Mercy Health Clinic administrative offices for the AVP Wellness<br></s1> ";
+          }
+          else if (currentFeature.properties.Name == "Nigh University Center (NUC)"){
+              imageSrc="https://3.bp.blogspot.com/-rvGTxUe4YYE/WlWKCQU3MiI/AAAAAAAAQrs/NdrWCuOrXck-6IF4BVzAeA1amQM__4-ZwCEwYBhgL/s640/knigh.JPG"; 
+              textDescription = "<s1>•  One of the main building which features over 37,000 square feet of available space and serves different kinds of services for students', staff' and visitors' needs.   <br>•  With more than 25 meeting rooms, a Post Office, full-service print shop, Barnes and Noble Bookstore, a food court, restaurant, Starbucks and a convenience store.<br></s1> ";
+          }
+          else if (currentFeature.properties.Name == "Howell Hall (HOH)"){
+              imageSrc="https://sites.uco.edu/administration/facilities/uco-eg-buildings/historic-buildings/hoh.jpg";
+              textDescription = "<s1>•	Built 1949 <br> •	159,870 square feet <br> •	College of Mathematics and Science classrooms, labs, faculty and administrative offices. <br></s1>";
+          }
+          else if (currentFeature.properties.Name == "STEM Building (STEM)"){
+              imageSrc="https://i.imgur.com/WwLDXRp.jpg";
+              textDescription = "<s1>•	Built 2018 <br>•	57,000-square-foot building, which will include state-of-the-art research labs, new classrooms and faculty office space<br>•	this STEM teaching and research center is for chemists, biologists, mathematicians, forensic scientists, computer scientists and engineers to work side-by-side under one roof, to propel the academic development in CMS majors <br></s1> ";
+          }
+          else if (currentFeature.properties.Name == "Math and Computer Science Building (MCS)"){
+              imageSrc="https://sites.uco.edu/administration/facilities/uco-eg-buildings/historic-buildings/mcs.jpg";
+              textDescription = "<s1>•	Built 1984 <br> •	22,885 square feet <br> •	College of Math and Science classrooms and faculty offices and the University Data and IT support offices <br></s1>";
+
+          }
+            
+          
+            
           var popup = new mapboxgl.Popup({ closeOnClick: true }) // close on click <- last time it's false...
             .setLngLat(currentFeature.geometry.coordinates[0][0])
             .setHTML('<h3>' + currentFeature.properties.Name + '</h3>' +
-              '<h4> (...) </h4>')
+              '<img src ='+ imageSrc+ ' width=180 height=150>' +
+              textDescription +
+              '<button class="popupbutton">Set As Start Point</button>'+ '<button class="popupbutton">Set As End Point&nbsp;</button')
             .addTo(map);
         }
+        
+        /* this not work somehow
+              currentFeature.properties.Description1 + '<br>' +
+              currentFeature.properties.Description2 + '<br>' +
+              currentFeature.properties.Description3 + '<br>' + 
+        */
         
         
         // this is where the code for the next step will go _Add your route request function
