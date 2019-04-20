@@ -3,12 +3,16 @@
   <head>
     <meta charset='utf-8' />
     <title>UCO Campus Map Service</title>
+
+    <!-- HTML imports -->
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,300" rel="stylesheet" type="text/css">
     
+    <!-- CSS style -->
     <style>
+    /* ################################################## START CSS ################################################## */
         body {
           color: #404040;
           font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
@@ -58,19 +62,6 @@
           font-size: 1.4em;
         }
         
-        /*
-        #map {
-          position: absolute;
-          margin: 50px;
-          margin-top: 80px;
-          margin-left:200px;
-          top: 0;
-          bottom: 0;
-          width: 70%;
-          float: right;
-        }
-        */
-        
         #map {
           border-left: 1px solid #fff;
           position: absolute;
@@ -97,21 +88,7 @@
         .duration {
           font-size: 2em;
         }
-        /*
-         #functionfield {
-          position: absolute;
-          margin: 10px;
-          margin-left: 1165px;
-          width: 12%;
-          top: 0;
-          bottom: 0%;
-          padding: 20px;
-          background-color: rgba(255, 255, 255, 0.9);
-          font-family: sans-serif;
-          font-size: 0.8em;
-          line-height: 2em;
-        */
-        
+
         #functionfield {
           position: absolute;   /* need to have position absolute, otherwise just fix in the left side */
           left: 80%;
@@ -281,12 +258,12 @@
           border: 2px solid #474746;
         }
         
-
-        
-        }
+      /* ################################################## END CSS ################################################## */
     </style>
   </head>
   <body>
+
+    <!-- HTML Body -->
     <div id='header'><h4>UCO Campus Map Service</h4></div>
     <img src ="https://upload.wikimedia.org/wikipedia/commons/a/a7/UCO-logo.gif" hspace= "15" width=200 height=50> <!--hspace = margin-left5px-->
     <div id='map' class='map pad2'></div>
@@ -320,8 +297,11 @@
         <a href="link" target="mid_col">Contact the Developers</a>
     </div>
 
-    <script>  // add the JavaScript here
+    <!-- JavaScript Code -->
+    <script> 
+    // ################################################## START Javascript ##################################################
         
+        // ############################## MAPBOX initialization ##############################
         // This will let you use the .remove() function later on   //for old browser compatability
         if (!('remove' in Element.prototype)) {
           Element.prototype.remove = function() {
@@ -347,6 +327,7 @@
         // initialize the map canvas to interact with later
         var canvas = map.getCanvasContainer();
 
+        // ############################## JS Variables initialization ##############################
         // an arbitrary start will always be the same
         // only the end or destination will change
         var start = [-97.47276891379411, 35.653974723160744];
@@ -354,14 +335,16 @@
         var global_coords_test;
         var global_count = 0;
 
-        function easing(t) {
-            return t * (2 - t);
-        }
         // pixels the map pans when the up or down arrow is clicked
         var deltaDistance = 100;
 
         // degrees the map rotates when the left or right arrow is clicked
         var deltaDegrees = 25;
+
+        // ############################## JS Functions declarations ##############################
+        function easing(t) {
+            return t * (2 - t);
+        }
         
         function buildLocationList(data) { // function for building building locations list
           // Iterate through the list of stores
@@ -385,7 +368,6 @@
             link.dataPosition = i;
             link.innerHTML = prop.Name;
 
-            
             // Add an event listener for the links in the sidebar listing                  // add listener for the listing link
             link.addEventListener('click', function(e) {
               // Update the currentFeature to the store associated with the clicked link
@@ -401,7 +383,6 @@
               }
               this.parentNode.classList.add('active');
             });
-            
             
             // Create a new div with the class 'details' for each store
             // and fill it with the city and phone number
@@ -458,8 +439,6 @@
 
           }
             
-          
-            
           var popup = new mapboxgl.Popup({ closeOnClick: true }) // close on click <- last time it's false...
             .setLngLat(currentFeature.geometry.coordinates[0][0])
             .setHTML('<h3>' + currentFeature.properties.Name + '</h3>' +
@@ -468,12 +447,6 @@
               '<button class="popupbutton">Set As Start Point</button>'+ '<button class="popupbutton">Set As End Point&nbsp;</button')
             .addTo(map);
         }
-        
-        /* this not work somehow
-              currentFeature.properties.Description1 + '<br>' +
-              currentFeature.properties.Description2 + '<br>' +
-              currentFeature.properties.Description3 + '<br>' + 
-        */
         
         
         // this is where the code for the next step will go _Add your route request function
@@ -545,74 +518,76 @@
           req.send();
         }
 
+
+        // ############################## Load Event Listener: MAP INITIALIZE EVENT ##############################
         map.on('load', function() {
-            map.getCanvas().focus();
+          map.getCanvas().focus();
+          
+          map.panBy([0, 350], {   //auto go down 350 manually because of UCO focus
+              easing: easing
+          });
+          
+          map.getCanvas().addEventListener('keydown', function(e) {
+              e.preventDefault();
+              if (e.which === 38) { // up
+                  map.panBy([0, -deltaDistance], {
+                  easing: easing
+                  });
+              } else if (e.which === 40) { // down
+                  map.panBy([0, deltaDistance], {
+                  easing: easing
+                  });
+              } else if (e.which === 37) { // left
+                  map.easeTo({
+                  bearing: map.getBearing() - deltaDegrees,
+                  easing: easing
+                  });
+              } else if (e.which === 39) { // right
+                  map.easeTo({
+                  bearing: map.getBearing() + deltaDegrees,
+                  easing: easing
+                  });
+              }
+          }, true);
+
+          // ############################## get buildings data from layer and load into listing (inside LOAD event) ##############################
+          // Add the data to your map as a layer (GEOJSON file)
+          // // don't have to add a layer... mapbox studio has it... failed to use query source... no idea about that...
+          var buildings_arr = map.queryRenderedFeatures({layers: ['uco-buildings']});
+          
+          global_coords_test = buildings_arr;
+          
+          if (!buildings_arr.length) {
+            return;
+          }
+          
+          var buildings = [];
+          var j=0;
+          var notOK = false;
+          
+          for (i=0; i<buildings_arr.length; i++){
+              notOK = false;
+              if (buildings_arr[i].properties.Name != undefined){
+                  for (t=0; t<buildings.length;t++){                          // somehow it will repeat sometimes, check everytime before insert
+                      if (buildings_arr[i].properties.Name == buildings[t].properties.Name){
+                          notOK = true;
+                          break;
+                      }
+                  }
+                  if (notOK == false){
+                      buildings[j]=buildings_arr[i];
+                      j = j+1;
+                  }
+              }
+          }
+          
+          global_coords_test = buildings;
+          
+          buildLocationList(buildings);
             
 
-            map.panBy([0, 350], {   //auto go down 350 manually because of UCO focus
-                easing: easing
-            });
             
-            // Add the data to your map as a layer (GEOJSON file)
-            // // don't have to add a layer... mapbox studio has it... failed to use query source... no idea about that...
-            var buildings_arr = map.queryRenderedFeatures({layers: ['uco-buildings']});
-            
-            
-            
-            global_coords_test = buildings_arr;
-            
-            if (!buildings_arr.length) {
-              return;
-            }
-            
-            var buildings = [];
-            var j=0;
-            var notOK = false;
-            
-            for (i=0; i<buildings_arr.length; i++){
-                notOK = false;
-                if (buildings_arr[i].properties.Name != undefined){
-                    for (t=0; t<buildings.length;t++){                          // somehow it will repeat sometimes, check everytime before insert
-                        if (buildings_arr[i].properties.Name == buildings[t].properties.Name){
-                            notOK = true;
-                            break;
-                        }
-                    }
-                    if (notOK == false){
-                        buildings[j]=buildings_arr[i];
-                        j = j+1;
-                    }
-                }
-            }
-            
-            global_coords_test = buildings;
-            
-            
-            buildLocationList(buildings);
-            
-            
-            map.getCanvas().addEventListener('keydown', function(e) {
-                e.preventDefault();
-                if (e.which === 38) { // up
-                    map.panBy([0, -deltaDistance], {
-                    easing: easing
-                    });
-                } else if (e.which === 40) { // down
-                    map.panBy([0, deltaDistance], {
-                    easing: easing
-                    });
-                } else if (e.which === 37) { // left
-                    map.easeTo({
-                    bearing: map.getBearing() - deltaDegrees,
-                    easing: easing
-                    });
-                } else if (e.which === 39) { // right
-                    map.easeTo({
-                    bearing: map.getBearing() + deltaDegrees,
-                    easing: easing
-                    });
-                }
-            }, true);
+          // ############################## getRoute(old) (inside LOAD event) ##############################
             
           // make an initial directions request that
           // starts and ends at the same location
@@ -642,101 +617,107 @@
               'circle-color': '#3887be' //start point color
             }
           });
+
+
+
+          // ############################## CLICK Event listener (inside Load event) ##############################
           // this is where the code from the next step will go _Add your origin and get your destination
-              map.on('click', function(e) {
-                  
-                  var features = map.queryRenderedFeatures(e.point, {
-                    layers: ['uco-buildings (1)'] // replace this with the name of the layer
-                  });
-
-                  if (!features.length) {
-                    return;
-                  }
-
-                  var feature = features[0];
-
-                  //global_coords_test = feature.geometry.coordinates[0][0];
-                  
-                  /*var popup = new mapboxgl.Popup({ offset: [0, -15] })                      // this popup is good, but uniform to list popup
-                    .setLngLat(feature.geometry.coordinates[0][0])
-                    .setHTML('<h3>' + feature.properties.Name + '</h3><p>' + '</p>')
-                    .setLngLat(feature.geometry.coordinates[0][0])
-                    .addTo(map);
-                  */
-                  
-                  // 1. Fly to the point
-        //          flyToStore(feature);
-                  // 2. Close all other popups and display popup for clicked store
-                  createPopUp(feature);
-                  // 3. Highlight listing in sidebar (and remove highlight for all other listings)
-                  var activeItem = document.getElementsByClassName('active');
-                  if (activeItem[0]) {
-                    activeItem[0].classList.remove('active');
-                  }
-                  // Find the index of the store.features that corresponds to the clickedPoint that fired the event listener
-                  var selectedFeature = feature.properties.Name;
-  
-                  for (var i = 0; i < buildings.length; i++) {
-                    if (buildings[i].properties.Name === selectedFeature) {
-                      selectedFeatureIndex = i;
-                    }
-                  }
-                  // Select the correct list item using the found index and add the active class
-                  var listing = document.getElementById('listing-' + selectedFeatureIndex);
-                  listing.classList.add('active');
-                  
-                  
-                  
-                  /* THIS PART IS TO GET END POINT FOR GET ROUTE
-                  var coordsObj = e.lngLat;
-                  canvas.style.cursor = '';
-                  var coords = Object.keys(coordsObj).map(function(key) {
-                    return coordsObj[key];
-                  });
-                  var end = {
-                    type: 'FeatureCollection',
-                    features: [{
-                      type: 'Feature',
-                      properties: {},
-                      geometry: {
-                        type: 'Point',
-                        coordinates: coords
-                      }
-                    }
-                    ]
-                  };
-                  if (map.getLayer('end')) {
-                    map.getSource('end').setData(end);
-                  } else {
-                    map.addLayer({
-                      id: 'end',
-                      type: 'circle',
-                      source: {
-                        type: 'geojson',
-                        data: {
-                          type: 'FeatureCollection',
-                          features: [{
-                            type: 'Feature',
-                            properties: {},
-                            geometry: {
-                              type: 'Point',
-                              coordinates: coords
-                            }
-                          }]
-                        }
-                      },
-                      paint: {
-                        'circle-radius': 4, //end point radius
-                        'circle-color': '#f30' //end point color
-                      }
-                });
-              }
-              global_end = coords;
-              getRoute(coords);
+          map.on('click', function(e) {
               
+              var features = map.queryRenderedFeatures(e.point, {
+                layers: ['uco-buildings (1)'] // replace this with the name of the layer
+              });
+
+              if (!features.length) {
+                return;
+              }
+
+              var feature = features[0];
+
+              //global_coords_test = feature.geometry.coordinates[0][0];
+              
+              /*var popup = new mapboxgl.Popup({ offset: [0, -15] })                      // this popup is good, but uniform to list popup
+                .setLngLat(feature.geometry.coordinates[0][0])
+                .setHTML('<h3>' + feature.properties.Name + '</h3><p>' + '</p>')
+                .setLngLat(feature.geometry.coordinates[0][0])
+                .addTo(map);
               */
+              
+              // 1. Fly to the point
+    //          flyToStore(feature);
+              // 2. Close all other popups and display popup for clicked store
+              createPopUp(feature);
+              // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+              var activeItem = document.getElementsByClassName('active');
+              if (activeItem[0]) {
+                activeItem[0].classList.remove('active');
+              }
+              // Find the index of the store.features that corresponds to the clickedPoint that fired the event listener
+              var selectedFeature = feature.properties.Name;
+
+              for (var i = 0; i < buildings.length; i++) {
+                if (buildings[i].properties.Name === selectedFeature) {
+                  selectedFeatureIndex = i;
+                }
+              }
+              // Select the correct list item using the found index and add the active class
+              var listing = document.getElementById('listing-' + selectedFeatureIndex);
+              listing.classList.add('active');
+              
+              
+              
+              /* THIS PART IS TO GET END POINT FOR GET ROUTE
+              var coordsObj = e.lngLat;
+              canvas.style.cursor = '';
+              var coords = Object.keys(coordsObj).map(function(key) {
+                return coordsObj[key];
+              });
+              var end = {
+                type: 'FeatureCollection',
+                features: [{
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {
+                    type: 'Point',
+                    coordinates: coords
+                  }
+                }
+                ]
+              };
+              if (map.getLayer('end')) {
+                map.getSource('end').setData(end);
+              } else {
+                map.addLayer({
+                  id: 'end',
+                  type: 'circle',
+                  source: {
+                    type: 'geojson',
+                    data: {
+                      type: 'FeatureCollection',
+                      features: [{
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                          type: 'Point',
+                          coordinates: coords
+                        }
+                      }]
+                    }
+                  },
+                  paint: {
+                    'circle-radius': 4, //end point radius
+                    'circle-color': '#f30' //end point color
+                  }
             });
+          }
+          global_end = coords;
+          getRoute(coords);
+          
+          */
         });
+      });
+    
+    // ################################################## END Javascript ##################################################
     </script>
 
   </body>
