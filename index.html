@@ -284,12 +284,12 @@
         <p></p>
         <br><br>
         <b><h>Start Point:</h></b><br>
-        <input text="">
+        <input type="text" name="StartPoint">
         <h></h><br>
         <b><h>End Point:</h></b><br>
-        <input text=""><br>
-        <input type='checkbox'>Wheelchair Accessible<br><br>
-        <button>Navigate</button>
+        <input type="text" name="EndPoint"><br>
+        <input type='checkbox' name="WheelchairAccessible">Wheelchair Accessible<br><br>
+        <button onclick="calculateRoute()"">Navigate</button>
         
     </div>   
 
@@ -314,7 +314,7 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoiZnJlbnp5ZHJrIiwiYSI6ImNqdDF5cGo3bjBqYnI0NG1qbzhnMmx0NmYifQ.K5MK4GArCk5nbQFbisJOFg';
         var map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/frenzydrk/cjtvq39zo16qn1fq5058v0elh', // my style
+            style: 'mapbox://styles/frenzydrk/cjuqdl7ou0kpa1fl8rbobt4r4', // my style
             center: [-97.47058579306456, 35.65558438585279], // starting position
             zoom: 12
         });
@@ -331,9 +331,7 @@
         // an arbitrary start will always be the same
         // only the end or destination will change
         var start = [-97.47276891379411, 35.653974723160744];
-        var global_end = [-97.47141360688943, 35.654825767816476];
-        var global_coords_test;
-        var global_count = 0;
+
 
         // pixels the map pans when the up or down arrow is clicked
         var deltaDistance = 100;
@@ -341,7 +339,112 @@
         // degrees the map rotates when the left or right arrow is clicked
         var deltaDegrees = 25;
 
+        // --- for function use --- (one time using, need to use another var to store it)
+        // var convertedIDGetFromFunction;
+        // var coordsGetFromFunction;
+        // var coords_arr_fromConverted;
+        // var distanceGetFromFunction;
+
+        // --- visited table ---
+        var visited_2D_table = create2DArray(200); // 200 rows, can create bigger if needed
+
+        // --- Points link data---
+        var linked_2D_table = create2DArray(200); // 200 rows, can create bigger if needed
+        // linked_2D_table[1][101]=true;
+        // linked_2D_table[101][1]=linked_2Dtrue;
+        MarkLinkedTable(1,[101]);
+        MarkLinkedTable(2,[108]);
+        MarkLinkedTable(3,[115]);
+        MarkLinkedTable(4,[121]);
+        MarkLinkedTable(5,[120]);
+        MarkLinkedTable(6,[137]);
+        MarkLinkedTable(7,[145]);
+        MarkLinkedTable(8,[134]);
+        MarkLinkedTable(9,[132]);
+        MarkLinkedTable(10,[139]);
+
+        MarkLinkedTable(51,[103]);
+        MarkLinkedTable(52,[104]);
+        MarkLinkedTable(53,[107,112]);
+        MarkLinkedTable(54,[116]);
+        MarkLinkedTable(55,[114,121]);
+        MarkLinkedTable(56,[124]);
+        MarkLinkedTable(57,[130]);
+        MarkLinkedTable(58,[128]);
+
+        MarkLinkedTable(101,[1,102]);
+        MarkLinkedTable(102,[101,103,107]);
+        MarkLinkedTable(103,[51,102,105,110]);
+        MarkLinkedTable(104,[52,105]);
+        MarkLinkedTable(105,[103,104,106]);
+        MarkLinkedTable(106,[105,115,118,119]);
+        MarkLinkedTable(107,[53,102,108]);
+        MarkLinkedTable(108,[2,107,109]);
+        MarkLinkedTable(109,[108,113]);
+        MarkLinkedTable(110,[103,111]);
+        MarkLinkedTable(111,[110,112]);
+        MarkLinkedTable(112,[53,111]);
+        MarkLinkedTable(113,[109,114]);
+        MarkLinkedTable(114,[55,113,121]);
+        MarkLinkedTable(115,[3,106,116,117]);
+        MarkLinkedTable(116,[54,115]);
+        MarkLinkedTable(117,[115,120]);
+        MarkLinkedTable(118,[106,119,129]);
+        MarkLinkedTable(119,[106,118,120,130]);
+        MarkLinkedTable(120,[5,117,119,121]);
+        MarkLinkedTable(121,[4,55,114,120,122]);
+        MarkLinkedTable(122,[121,123,124]);
+        MarkLinkedTable(123,[122,124,125]);
+        MarkLinkedTable(124,[56,122,123,125]);
+        MarkLinkedTable(125,[123,124,126]);
+        MarkLinkedTable(126,[125,127]);
+        MarkLinkedTable(127,[126,128]);
+        MarkLinkedTable(128,[58,127,144,145]);
+        MarkLinkedTable(129,[118,133]);
+        MarkLinkedTable(130,[57,119,135]);
+        MarkLinkedTable(131,[132,133]);
+        MarkLinkedTable(132,[9,131]);
+        MarkLinkedTable(133,[129,131,134]);
+        MarkLinkedTable(134,[8,133,135,138]);
+        MarkLinkedTable(135,[130,134,136]);
+        MarkLinkedTable(136,[135,137]);
+        MarkLinkedTable(137,[6,136,140,145]);
+        MarkLinkedTable(138,[134,139]);
+        MarkLinkedTable(139,[10,138,140]);
+        MarkLinkedTable(140,[137,139,141,142]);
+        MarkLinkedTable(141,[140,142,143]);
+        MarkLinkedTable(142,[140,141,143,145]);
+        MarkLinkedTable(143,[141,142,144]);
+        MarkLinkedTable(144,[128,143,145]);
+        MarkLinkedTable(145,[7,128,137,142,144]);
+        
+
+
+
+        // --- for testing ---
+        var global_end = [-97.47141360688943, 35.654825767816476];
+        var global_coords_test1;
+        var global_coords_test2;
+        var global_coords_test3;
+        var global_count = 0;
+
         // ############################## JS Functions declarations ##############################
+        function create2DArray(rows) { // rows number, cols doesn't matter
+          var arr = [];
+          for (i=0; i<rows; i++) {
+            arr[i] = [];
+          }
+          return arr;
+        }
+
+        function MarkLinkedTable(row_index, col_arr){
+          for (i=0; i<col_arr.length; i++){
+            visited_2D_table[row_index][col_arr[0]] = true;
+          }
+        }
+        
+
+
         function easing(t) {
             return t * (2 - t);
         }
@@ -387,10 +490,35 @@
             // Create a new div with the class 'details' for each store
             // and fill it with the city and phone number
             var details = listing.appendChild(document.createElement('div'));
-            details.innerHTML = prop.city;
-            if (prop.phone) {
-              details.innerHTML += ' · ' + prop.phoneFormatted;
+            var locationOrientation;
+
+            if (prop.Name == "Visitor Parking Lot"){
+              locationOrientation = "located <u>south</u> of the campus";
             }
+            else if (prop.Name == "Chambers Library (LIB)"){
+              locationOrientation = "located <u>west</u> of the campus";
+            }
+            else if (prop.Name == "Wellness Center (Gym) (WEL)"){
+              locationOrientation = "located <u>north west</u> of the campus";
+            }
+            else if (prop.Name == "Nigh University Center (NUC)"){
+              locationOrientation = "located <u>south-south west</u> of the campus";
+            }
+            else if (prop.Name == "Howell Hall (HOH)"){
+              locationOrientation = "located <u>south west</u> of the campus";
+            }
+            else if (prop.Name == "STEM Building (STEM)"){
+              locationOrientation = "located <u>south</u> of the campus";
+            }
+            else if (prop.Name == "Math and Computer Science Building (MCS)"){
+              locationOrientation = "located <u>south west</u> of the campus";
+
+          }
+
+            details.innerHTML = locationOrientation;
+            // if (prop.phone) {
+            //   details.innerHTML += ' · ' + prop.phoneFormatted;
+            // }
           }
         }
         
@@ -448,6 +576,376 @@
             .addTo(map);
         }
         
+        function getID(currentFeature){ // feature of wid/nid/pid => id
+          var currentFeatureProp = currentFeature.properties;
+          var id;
+
+          if (currentFeatureProp.wid != null){
+            id = currentFeatureProp.wid;      // w01 = 1
+          }
+
+          if (currentFeatureProp.nid != null){
+            id = currentFeatureProp.nid+50;   // n01 = 51
+          }
+
+          if (currentFeatureProp.pid != null){
+            id = currentFeatureProp.pid+100;  // p01 = 101
+          }
+
+          return id;
+        }
+
+        function convertID(id){ // id => feature of wid/nid/pid
+          var featureOfTheID;
+
+          if (id<=50) featureOfTheID = wid_arr[id];      //wid_arr[wid] {type = w, wid = id}
+          if (id<=100) featureOfTheID = nid_arr[id-50];      //nid_arr[nid] {type = n, nid = id-50} 
+          if (id>100) featureOfTheID = pid_arr[id-100];      //pid_arr[pid] {type = p, pid = id-100}
+
+          return featureOfTheID;
+
+        }
+
+        function getCoordinate(id){ // id => coordinates of the feature [array type]
+          var currentFeature = convertID(id);
+          var coords;
+          var coords_arr;
+
+          coords = currentFeature.geometry.coordinates[0][0];
+          coords_arr = coords.toArray();
+
+          return coords_arr;
+
+        }
+
+        // function getDistance(x1,y1,x2,y2){ //coords1.lat, coords1.lng, coords2.lat, coords2.lng   // return distance
+        //   return Math.sqrt(Math.pow((x2-x1),2)-Math.pow((y2-y1),2));
+        // }
+
+        function getDistance(id1, id2){ //id1, id2  // return distance
+          var id1Coords = getCoordinate(id1);
+          var id2Coords = getCoordinate(id2);
+
+          var x1 = id1Coords[0];
+          var y1 = id1Coords[1];
+          var x2 = id2Coords[0];
+          var y2 = id2Coords[1];
+
+          return Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2));
+        }
+
+        function setAsStartPointEndPoint(){
+          var startpoint = document.getElementById("StartPoint").value;
+          var endpoint = document.getElementById("EndPoint").value;
+          var WheelchairAccessible = document.getElementByID("WheelchairAccessible").checked; // true or false
+
+          var startpointFeature;
+          var endpointFeautre;
+
+          var startpointisSet = false;
+          var endpointisSet = false;
+
+          // Check if endpoint is building input, assume one entrance first
+          switch(endpoint){
+            case 'MCS':
+              if (WheelchairAccessible == true) endpointFeature = MCS_warr[0];
+              else endpointFeature = MCS_narr[0];
+              endpointisSet = true;
+              break;
+            
+            case 'HOH':
+              if (WheelchairAccessible == true) endpointFeature = HOH_warr[0];
+              else endpointFeature = HOH_narr[0];
+              endpointisSet = true;
+              break;
+
+            case 'NUC':
+              if (WheelchairAccessible == true) endpointFeature = NUC_warr[0];
+              else endpointFeature = NUC_narr[0];
+              endpointisSet = true;
+              break;
+            
+            case 'STEM':
+              endpointFeature = STEM_wnarr[0];
+              endpointisSet = true;
+              break;
+            
+            case 'LIB':
+              endpointFeature = LIB_wnarr[0];
+              endpointisSet = true;
+              break;
+
+            case 'WEL':
+              endpointFeature = WEL_wnarr[0];
+              endpointisSet = true;
+              break;
+            
+            case 'VPL':
+              endpointFeature = VPL_wnarr[0];
+              endpointisSet = true;
+              break;
+
+          }
+
+          // if endpoint is not building input, check entrance input for endpoint
+          if (endpointisSet == false){
+            if (endpoint.length != 3) return; // if not 3 character  
+            var endpointtype = endpoint.slice(0,1); // first character eg. w
+            var endpointid = endpoint.slice(1,3); // 2nd and 3rd character eg. 01
+            if (endpointtype!= 'w' && endpointtype != 'n' && endpointtype != 'p') return;  // if not 'w' 'n' 'p' 
+            if (!isNAN(endpointid)) return; // if not number
+
+            if (endpointtype == 'w') {endpointFeature = wid_arr[endpointid]; endpointisSet = true;}
+            if (endpointtype == 'n') {endpointFeature = nid_arr[endpointid]; endpointisSet = true;}
+            if (endpointtype == 'p') {endpointFeature = pid_arr[endpointid]; endpointisSet = true;}
+          }
+
+
+          // check if the startpoint is building input, if yes, choose the best entrance
+          var minStartDist = Math.pow(2,32)-1; // infinity
+          var minStartPointid;
+
+          switch(startpoint){
+            case 'MCS':
+              if (WheelchairAccessible == true) {
+                for (i=0; i<MCS_warr.length; i++){
+                  var distStartEnd = getDistance(getID(MCS_warr[i]),getID(endpointFeautre));
+                  if (distStartEnd < minStartDist){
+                    minStartDist = distStartEnd;
+                    startpointFeature = MCS_warr[i];
+                  }
+                }
+              }
+              else {
+                for (i=0; i<MCS_narr.length; i++){
+                  var distStartEnd = getDistance(getID(MCS_narr[i]),getID(endpointFeautre));
+                  if (distStartEnd < minStartDist){
+                    minStartDist = distStartEnd;
+                    startpointFeature = MCS_narr[i];
+                  }
+                }
+              }
+              startpointisSet = true;
+              break;
+            
+            case 'HOH':
+            if (WheelchairAccessible == true) {
+                for (i=0; i<HOH_warr.length; i++){
+                  var distStartEnd = getDistance(getID(HOH_warr[i]),getID(endpointFeautre));
+                  if (distStartEnd < minStartDist){
+                    minStartDist = distStartEnd;
+                    startpointFeature = HOH_warr[i];
+                  }
+                }
+              }
+              else {
+                for (i=0; i<HOH_narr.length; i++){
+                  var distStartEnd = getDistance(getID(HOH_narr[i]),getID(endpointFeautre));
+                  if (distStartEnd < minStartDist){
+                    minStartDist = distStartEnd;
+                    startpointFeature = HOH_narr[i];
+                  }
+                }
+              }
+              startpointisSet = true;
+              break;
+
+            case 'NUC':
+            if (WheelchairAccessible == true) {
+                for (i=0; i<NUC_warr.length; i++){
+                  var distStartEnd = getDistance(getID(NUC_warr[i]),getID(endpointFeautre));
+                  if (distStartEnd < minStartDist){
+                    minStartDist = distStartEnd;
+                    startpointFeature = NUC_warr[i];
+                  }
+                }
+              }
+              else {
+                for (i=0; i<NUC_narr.length; i++){
+                  var distStartEnd = getDistance(getID(NUC_narr[i]),getID(endpointFeautre));
+                  if (distStartEnd < minStartDist){
+                    minStartDist = distStartEnd;
+                    startpointFeature = NUC_narr[i];
+                  }
+                }
+              }
+              startpointisSet = true;
+              break;
+            
+            case 'STEM':
+              for (i=0; i<STEM_wnarr.length; i++){
+                var distStartEnd = getDistance(getID(STEM_wnarr[i]),getID(endpointFeautre));
+                if (distStartEnd < minStartDist){
+                  minStartDist = distStartEnd;
+                  startpointFeature = STEM_wnarr[i];
+                }
+              }
+              startpointisSet = true;
+              break;
+            
+            case 'LIB':
+              for (i=0; i<LIB_wnarr.length; i++){
+                var distStartEnd = getDistance(getID(LIB_wnarr[i]),getID(endpointFeautre));
+                if (distStartEnd < minStartDist){
+                  minStartDist = distStartEnd;
+                  startpointFeature = LIB_wnarr[i];
+                }
+              }
+              startpointisSet = true;
+              break;
+
+            case 'WEL':
+              for (i=0; i<WEL_wnarr.length; i++){
+                var distStartEnd = getDistance(getID(WEL_wnarr[i]),getID(endpointFeautre));
+                if (distStartEnd < minStartDist){
+                  minStartDist = distStartEnd;
+                  startpointFeature = WEL_wnarr[i];
+                }
+              }
+              startpointisSet = true;
+              break;
+            
+            case 'VPL':
+              startpointFeature = VPL_wnarr[0]; // only 1
+              startpointisSet = true;
+              break;
+              
+          }
+
+          // if startpoint is not building input, check for entrance input
+          if (startpointisSet == false){
+            if (startpoint.length != 3) return;
+            var startpointtype = startpoint.slice(0,1); // first character eg. w
+            var startpointid = startpoint.slice(1,3); // 2nd and 3rd character eg. 01
+            if (startpointtype!= 'w' && startpointtype != 'n' && startpointtype != 'p') return; // if not 'w' 'n' 'p'
+            if (!isNAN(startpointid)) return; // if not number
+
+            if (startpointtype == 'w') startpointFeature = wid_arr[startpointid];
+            if (startpointtype == 'n') startpointFeature = nid_arr[startpointid];
+            if (startpointtype == 'p') startpointFeature = pid_arr[startpointid]; // p not necessary, but can keep for p41, Visitor Parking Lot
+          }
+
+          
+          // check if the building endpoint chose the best entrance
+          var minEndDist = Math.pow(2,32)-1; // infinity
+          var minEndPointid;
+
+          switch(endpoint){
+            case 'MCS':
+              if (WheelchairAccessible == true) {
+                for (i=0; i<MCS_warr.length; i++){
+                  var distEndStart = getDistance(getID(MCS_warr[i]),getID(startpointFeautre));
+                  if (distEndStart < minEndDist){
+                    minEndDist = distEndStart;
+                    endpointFeature = MCS_warr[i];
+                  }
+                }
+              }
+              else {
+                for (i=0; i<MCS_narr.length; i++){
+                  var distEndStart = getDistance(getID(MCS_narr[i]),getID(startpointFeautre));
+                  if (distEndStart < minEndDist){
+                    minEndDist = distEndStart;
+                    endpointFeature = MCS_narr[i];
+                  }
+                }
+              }
+              break;
+            
+            case 'HOH':
+            if (WheelchairAccessible == true) {
+                for (i=0; i<HOH_warr.length; i++){
+                  var distEndStart = getDistance(getID(HOH_warr[i]),getID(startpointFeautre));
+                  if (distEndStart < minEndDist){
+                    minEndDist = distEndStart;
+                    endpointFeature = HOH_warr[i];
+                  }
+                }
+              }
+              else {
+                for (i=0; i<HOH_narr.length; i++){
+                  var distEndStart = getDistance(getID(HOH_narr[i]),getID(startpointFeautre));
+                  if (distEndStart < minEndDist){
+                    minEndDist = distEndStart;
+                    endpointFeature = HOH_narr[i];
+                  }
+                }
+              }              
+              break;
+
+            case 'NUC':
+            if (WheelchairAccessible == true) {
+                for (i=0; i<NUC_warr.length; i++){
+                  var distEndStart = getDistance(getID(NUC_warr[i]),getID(startpointFeautre));
+                  if (distEndStart < minEndDist){
+                    minEndDist = distEndStart;
+                    endpointFeature = NUC_warr[i];
+                  }
+                }
+              }
+              else {
+                for (i=0; i<NUC_narr.length; i++){
+                  var distEndStart = getDistance(getID(NUC_narr[i]),getID(startpointFeautre));
+                  if (distEndStart < minEndDist){
+                    minEndDist = distEndStart;
+                    endpointFeature = NUC_narr[i];
+                  }
+                }
+              }              
+              break;
+            
+            case 'STEM':
+              for (i=0; i<STEM_wnarr.length; i++){
+                var distEndStart = getDistance(getID(STEM_wnarr[i]),getID(startpointFeautre));
+                if (distEndStart < minEndDist){
+                  minEndDist = distEndStart;
+                  endpointFeature = STEM_wnarr[i];
+                }
+              }
+              break;
+            
+            case 'LIB':
+              for (i=0; i<LIB_wnarr.length; i++){
+                var distEndStart = getDistance(getID(LIB_wnarr[i]),getID(startpointFeautre));
+                if (distEndStart < minEndDist){
+                  minEndDist = distEndStart;
+                  endpointFeature = LIB_wnarr[i];
+                }
+              }              
+              break;
+
+            case 'WEL':
+              for (i=0; i<WEL_wnarr.length; i++){
+                var distEndStart = getDistance(getID(WEL_wnarr[i]),getID(startpointFeautre));
+                if (distEndStart < minEndDist){
+                  minEndDist = distEndStart;
+                  endpointFeature = WEL_wnarr[i];
+                }
+              }              
+              break;
+            
+            case 'VPL':
+              endpointFeature = VPL_wnarr[0]; // only 1
+              break;
+              
+          }
+
+          var startendpoint_arr = [startpointFeature, endpointFeature];
+
+          return startendpoint_arr;
+
+        }
+
+        function calculateRoute(){
+          var startendpoint_arr = setAsStartPointEndPoint();
+          var startpointFeature = startendpoint_arr[0];
+          var endpointFeature = startendpoint_arr[1];
+
+          var StartPoint_ID = getID(startpointFeature);
+          var EndPoint_ID = getID(endpointFeature);
+
+
+        }
         
         // this is where the code for the next step will go _Add your route request function
         // create a function to make a directions request
@@ -555,8 +1053,6 @@
           // // don't have to add a layer... mapbox studio has it... failed to use query source... no idea about that...
           var buildings_arr = map.queryRenderedFeatures({layers: ['uco-buildings']});
           
-          global_coords_test = buildings_arr;
-          
           if (!buildings_arr.length) {
             return;
           }
@@ -581,10 +1077,83 @@
               }
           }
           
-          global_coords_test = buildings;
-          
           buildLocationList(buildings);
-            
+          
+
+          // ############################## get wid, nid, pid from layer and load into listing (inside LOAD event) ##############################
+          var wid_arr_unsorted = map.queryRenderedFeatures({layers: ['uco-wid']});
+          if (!wid_arr_unsorted.length) return;
+
+
+          var wid_arr = [];
+          var wid_arr_count = 0;
+          while (wid_arr_count < wid_arr_unsorted.length){
+            for (i=0; i<wid_arr_unsorted.length; i++ ){
+              var currentFeature = wid_arr_unsorted[i];
+              var currentFeatureProp = currentFeature.properties;
+              if (currentFeatureProp.wid == wid_arr_count+1) {
+                wid_arr[wid_arr_count+1] = wid_arr_unsorted[i]; // wid_arr[1] = w01
+                wid_arr_count++;
+              }
+            }
+          }
+
+          var nid_arr_unsorted = map.queryRenderedFeatures({layers: ['uco-nid']});
+          if (!nid_arr_unsorted.length) return;
+
+          var nid_arr = [];
+          var nid_arr_count = 0;
+          while (nid_arr_count < nid_arr_unsorted.length){
+            for (i=0; i<nid_arr_unsorted.length; i++ ){
+              var currentFeature = nid_arr_unsorted[i];
+              var currentFeatureProp = currentFeature.properties;
+              if (currentFeatureProp.nid == nid_arr_count+1) {
+                nid_arr[nid_arr_count+1] = nid_arr_unsorted[i]; // nid_arr[1] = n01
+                nid_arr_count++;
+              }
+            }
+          }
+          
+          var pid_arr_unsorted = map.queryRenderedFeatures({layers: ['uco-pid']});
+          if (!pid_arr_unsorted.length) return;
+
+          var pid_arr = [];
+          var pid_arr_count = 0;
+          while (pid_arr_count < pid_arr_unsorted.length){
+            for (i=0; i<pid_arr_unsorted.length; i++ ){
+              var currentFeature = pid_arr_unsorted[i];
+              var currentFeatureProp = currentFeature.properties;
+              if (currentFeatureProp.pid == pid_arr_count+1) {
+                pid_arr[pid_arr_count+1] = pid_arr_unsorted[i]; // pid_arr[1] = p01
+                pid_arr_count++;
+              }
+            }
+          }
+
+          global_coords_test1 = wid_arr;
+          global_coords_test2 = nid_arr;
+          global_coords_test3 = pid_arr;
+
+          // ------------------------------ get building entrances arrays -----------------------------------
+          // ### Buildings 1. MCS, 2. HOH, 3. NUC, 4. STEM, 5. LIB, 6. WEL, (7. VPL)
+          // 1. MCS
+          var MCS_warr = [wid_arr[1]];
+          var MCS_narr = [wid_arr[1], nid_arr[1], nid_arr[2]];
+          // 2. HOH
+          var HOH_warr = [wid_arr[2], wid_arr[3]];
+          var HOH_narr = [wid_arr[2], wid_arr[3], nid_arr[3], nid_arr[4], nid_arr[5]];
+          // 3. NUC
+          var NUC_warr = [wid_arr[4], wid_arr[5], wid_arr[6], wid_arr[7]];
+          var NUC_narr = [wid_arr[4], wid_arr[5], wid_arr[6], wid_arr[7], nid_arr[6], nid_arr[7], nid_arr[8]];
+          // 4. STEM
+          var STEM_wnar = [wid_arr[8], wid_arr[9], wid_arr[10]];
+          // 5. LIB
+          var LIB_wnar = [wid_arr[11], wid_arr[12]];
+          // 6. WEL
+          var WEL_wnar = [wid_arr[13], wid_arr[14]];
+          // (7. VPL)
+          var VPL_wnar = [pid_arr[41]];
+
 
             
           // ############################## getRoute(old) (inside LOAD event) ##############################
