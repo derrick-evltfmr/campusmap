@@ -346,12 +346,13 @@
         // var distanceGetFromFunction;
 
         // --- visited table ---
-        var visited_2D_table = create2DArray(200); // 200 rows, can create bigger if needed
+        var visited_table = []; // 1D is ok for marking visited
+        for (i=0; i<200; i++) visited_table[i] = false;
 
         // --- Points link data---
-        var linked_2D_table = create2DArray(200); // 200 rows, can create bigger if needed
-        // linked_2D_table[1][101]=true;
-        // linked_2D_table[101][1]=linked_2Dtrue;
+        //var linked_2D_table = create2DArray(200); // 200 rows, can create bigger if needed
+        var linked_2D_array = create2DArray(200);
+
         MarkLinkedTable(1,[101]);
         MarkLinkedTable(2,[108]);
         MarkLinkedTable(3,[115]);
@@ -437,9 +438,15 @@
           return arr;
         }
 
-        function MarkLinkedTable(row_index, col_arr){
-          for (i=0; i<col_arr.length; i++){
-            visited_2D_table[row_index][col_arr[0]] = true;
+        // function MarkLinkedTable(row_index, col_arr){
+        //   for (i=0; i<col_arr.length; i++){
+        //     linked_2D_table[row_index][col_arr[0]] = true;
+        //   }
+        // }
+
+        function MarkLinkedArray(baseid_index, adjacentid_arr){
+          for (i=0; i<adjacentid_arr.length; i++){
+            linked_2D_array[baseid_index][i] = adjacentid_arr[i];  // e.g. MarkLinkedTable(102,[101,103,107]); linked_2D_array[102] = [101,103,107], so when we query 102, we will get array of [101,103,107]
           }
         }
         
@@ -575,6 +582,7 @@
               '<button class="popupbutton">Set As Start Point</button>'+ '<button class="popupbutton">Set As End Point&nbsp;</button')
             .addTo(map);
         }
+        
         
         function getID(currentFeature){ // feature of wid/nid/pid => id
           var currentFeatureProp = currentFeature.properties;
@@ -936,14 +944,64 @@
 
         }
 
+        function pickMove(currentpoint_id, endpoint_id){ // two parameters: current point, final point (destination)
+          var adjacentnodes_arr = linked_2D_array[currentpoint_id];
+          var minDistToEndPoint= Math.pow(2,32)-1; // infinity
+          var minDistNodeid;
+          
+          // for each node in adjacent nodes array
+          for (i=0; i < adjacentnodes_arr.length; i++){ 
+            if (visited_table[adjacentnodes_arr[i]]==false){ // visited_table[each adjacent node id] == false, if the node is unvisited
+              if (getDistance(adjacentnodes_arr[i], endpoint_id) < minDistToEndPoint){ // if the distance between the node and endpoint is the minimum dist
+                minDistToEndPoint = getDistance(adjacentnodes_arr[i], endpoint_id); // then minDist = this node dist
+                minDistNodeid = adjacentnodes_arr[i]; // minDistNode = this node
+              }
+            }
+          }
+
+          return minDistNodeid;
+
+        }
+
         function calculateRoute(){
           var startendpoint_arr = setAsStartPointEndPoint();
           var startpointFeature = startendpoint_arr[0];
           var endpointFeature = startendpoint_arr[1];
 
+          // decalre a resultroute arr;
+          var resultroute_arr = [];
+
+          // reset all visited to false before calculation
+          for (i=0; i<200; i++) visited_table[i] = false; 
+
+          // having start point and end point
           var StartPoint_ID = getID(startpointFeature);
           var EndPoint_ID = getID(endpointFeature);
 
+          // 0th move: start point is visited
+          CurrentPoint_ID = StartPoint_ID;
+          resultroute_arr[0] = CurrentPoint_ID; // start point
+          visited_table[CurrentPoint_ID] = true;  // start point
+
+
+          // check the whether adjacent node is visited and compare the distances between endpoint among those unvisited nodes, do these all in pickMove
+          var nextMove;
+          var resultroute_arr_index = 1;
+
+          while (nextMove!=EndPoint_ID){
+            nextMove = pickMove(CurrentPoint_ID, EndPoint_ID);
+
+            CurrentPoint_ID = nextMove; // decided to move, so current point
+            resultroute_arr[resultroute_arr_index] = CurrentPoint_ID; // add into result arr
+            visited_table[CurrentPoint_ID] = true; // visited set to true
+            
+            if (nextMove != EndPoint_ID){ // if not arrive the end point
+              resultroute_arr_index++; // resultroute arr index ++, so that to have to next index to add the next move
+            }
+            // if arrive the end point, it's already added to the resultroute array, then end loop
+          }
+
+          return resultroute_arr;
 
         }
         
