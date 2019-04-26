@@ -284,11 +284,11 @@
         <p></p>
         <br><br>
         <b><h>Start Point:</h></b><br>
-        <input type="text" name="StartPoint">
+        <input type="text" id="StartPoint">
         <h></h><br>
         <b><h>End Point:</h></b><br>
-        <input type="text" name="EndPoint"><br>
-        <input type='checkbox' name="WheelchairAccessible">Wheelchair Accessible<br><br>
+        <input type="text" id="EndPoint"><br>
+        <input type='checkbox' class="WheelchairAccessible">Wheelchair Accessible<br><br>
         <button onclick="calculateRoute()"">Navigate</button>
         
     </div>   
@@ -344,6 +344,23 @@
         // var coordsGetFromFunction;
         // var coords_arr_fromConverted;
         // var distanceGetFromFunction;
+
+        // --- global-level points arr declaration ---
+        var wid_arr;
+        var nid_arr;
+        var pid_arr;
+
+        // --- global-level buildings arr declaration ---
+        var MCS_warr; // 1. MCS
+        var MCS_narr;
+        var HOH_warr; // 2. HOH
+        var HOH_narr;
+        var NUC_warr; // 3. NUC
+        var NUC_narr;
+        var STEM_wnarr;// 4. STEM
+        var LIB_wnarr; // 5. LIB
+        var WEL_wnarr; // 6. WEL
+        var VPL_wnarr; // 7. VPL
 
         // --- visited table ---
         var visited_table = []; // 1D is ok for marking visited
@@ -422,12 +439,16 @@
 
 
 
+
+
         // --- for testing ---
         var global_end = [-97.47141360688943, 35.654825767816476];
         var global_coords_test1;
         var global_coords_test2;
         var global_coords_test3;
         var global_count = 0;
+        var global_test_start;
+        var global_test_end;
 
         // ############################## JS Functions declarations ##############################
         function create2DArray(rows) { // rows number, cols doesn't matter
@@ -607,20 +628,22 @@
           var featureOfTheID;
 
           if (id<=50) featureOfTheID = wid_arr[id];      //wid_arr[wid] {type = w, wid = id}
-          if (id<=100) featureOfTheID = nid_arr[id-50];      //nid_arr[nid] {type = n, nid = id-50} 
+          if (id>50 && id<=100) featureOfTheID = nid_arr[id-50];      //nid_arr[nid] {type = n, nid = id-50}     // fixed (i>50) because this is not else if, will have error
           if (id>100) featureOfTheID = pid_arr[id-100];      //pid_arr[pid] {type = p, pid = id-100}
 
           return featureOfTheID;
 
         }
 
-        function getCoordinate(id){ // id => coordinates of the feature [array type]
+        function getCoordinates(id){ // id => coordinates of the feature [array type]
           var currentFeature = convertID(id);
+          
           var coords;
           var coords_arr;
 
-          coords = currentFeature.geometry.coordinates[0][0];
-          coords_arr = coords.toArray();
+          coords = currentFeature.geometry.coordinates; // somehow here is no coordinates[0][0]
+          //coords_arr = coords.toArray();
+          coords_arr = coords; // found this is indeed an array
 
           return coords_arr;
 
@@ -631,8 +654,8 @@
         // }
 
         function getDistance(id1, id2){ //id1, id2  // return distance
-          var id1Coords = getCoordinate(id1);
-          var id2Coords = getCoordinate(id2);
+          var id1Coords = getCoordinates(id1);
+          var id2Coords = getCoordinates(id2);
 
           var x1 = id1Coords[0];
           var y1 = id1Coords[1];
@@ -645,7 +668,8 @@
         function setAsStartPointEndPoint(){
           var startpoint = document.getElementById("StartPoint").value;
           var endpoint = document.getElementById("EndPoint").value;
-          var WheelchairAccessible = document.getElementByID("WheelchairAccessible").checked; // true or false
+          //var WheelchairAccessible = document.getElementByID("WheelchairAccessible").checked; // THIS DOESN'T WORK
+          var WheelchairAccessible = document.querySelector('.WheelchairAccessible').checked; // THIS WORK
 
           var startpointFeature;
           var endpointFeautre;
@@ -695,18 +719,21 @@
 
           }
 
+
           // if endpoint is not building input, check entrance input for endpoint
-          if (endpointisSet == false){
+            if (endpointisSet == false){
             if (endpoint.length != 3) return; // if not 3 character  
             var endpointtype = endpoint.slice(0,1); // first character eg. w
             var endpointid = endpoint.slice(1,3); // 2nd and 3rd character eg. 01
             if (endpointtype!= 'w' && endpointtype != 'n' && endpointtype != 'p') return;  // if not 'w' 'n' 'p' 
-            if (!isNAN(endpointid)) return; // if not number
+            if (!isNaN(endpointid)==false) return; // if not number, isNaN (O) isNAN (X), !isNaN means is number, when is number == false, return
 
-            if (endpointtype == 'w') {endpointFeature = wid_arr[endpointid]; endpointisSet = true;}
-            if (endpointtype == 'n') {endpointFeature = nid_arr[endpointid]; endpointisSet = true;}
-            if (endpointtype == 'p') {endpointFeature = pid_arr[endpointid]; endpointisSet = true;}
+            if (endpointtype == 'w') {endpointFeature = wid_arr[parseInt(endpointid)]; endpointisSet = true;} // "01" =/= 1, so we need parseInt()
+            if (endpointtype == 'n') {endpointFeature = nid_arr[parseInt(endpointid)]; endpointisSet = true;}
+            if (endpointtype == 'p') {endpointFeature = pid_arr[parseInt(endpointid)]; endpointisSet = true;}
           }
+
+
 
 
           // check if the startpoint is building input, if yes, choose the best entrance
@@ -826,11 +853,11 @@
             var startpointtype = startpoint.slice(0,1); // first character eg. w
             var startpointid = startpoint.slice(1,3); // 2nd and 3rd character eg. 01
             if (startpointtype!= 'w' && startpointtype != 'n' && startpointtype != 'p') return; // if not 'w' 'n' 'p'
-            if (!isNAN(startpointid)) return; // if not number
+            if (!isNaN(startpointid) == false) return; // if not number, isNaN (O), isNAN (X), !isNaN means is number, so when is number == false, return
 
-            if (startpointtype == 'w') startpointFeature = wid_arr[startpointid];
-            if (startpointtype == 'n') startpointFeature = nid_arr[startpointid];
-            if (startpointtype == 'p') startpointFeature = pid_arr[startpointid]; // p not necessary, but can keep for p41, Visitor Parking Lot
+            if (startpointtype == 'w') startpointFeature = wid_arr[parseInt(startpointid)]; //"01" =/= 1, so we need parseInt
+            if (startpointtype == 'n') startpointFeature = nid_arr[parseInt(startpointid)];
+            if (startpointtype == 'p') startpointFeature = pid_arr[parseInt(startpointid)]; // p not necessary, but can keep for p41, Visitor Parking Lot
           }
 
           
@@ -938,8 +965,10 @@
               
           }
 
-          var startendpoint_arr = [startpointFeature, endpointFeature];
+          // startpointFeature = MCS_narr[1]; //n01
+          // endpointFeature = NUC_warr[1]; //w05
 
+          var startendpoint_arr = [startpointFeature, endpointFeature];
           return startendpoint_arr;
 
         }
@@ -952,6 +981,9 @@
           // for each node in adjacent nodes array
           for (i=0; i < adjacentnodes_arr.length; i++){ 
             if (visited_table[adjacentnodes_arr[i]]==false){ // visited_table[each adjacent node id] == false, if the node is unvisited
+
+              if (adjacentnodes_arr[i]<=100 && adjacentnodes_arr[i]!=endpoint_id) continue; // if id<=100, which means entrance, but not endpoint_id, don't go into it!!!!
+            
               if (getDistance(adjacentnodes_arr[i], endpoint_id) < minDistToEndPoint){ // if the distance between the node and endpoint is the minimum dist
                 minDistToEndPoint = getDistance(adjacentnodes_arr[i], endpoint_id); // then minDist = this node dist
                 minDistNodeid = adjacentnodes_arr[i]; // minDistNode = this node
@@ -979,9 +1011,10 @@
           var EndPoint_ID = getID(endpointFeature);
 
           // 0th move: start point is visited
-          CurrentPoint_ID = StartPoint_ID;
+          var CurrentPoint_ID = StartPoint_ID;
           resultroute_arr[0] = CurrentPoint_ID; // start point
           visited_table[CurrentPoint_ID] = true;  // start point
+
 
 
           // check the whether adjacent node is visited and compare the distances between endpoint among those unvisited nodes, do these all in pickMove
@@ -994,6 +1027,9 @@
             CurrentPoint_ID = nextMove; // decided to move, so current point
             resultroute_arr[resultroute_arr_index] = CurrentPoint_ID; // add into result arr
             visited_table[CurrentPoint_ID] = true; // visited set to true
+
+            global_test_start = resultroute_arr_index; // for debug testing
+            global_test_end = resultroute_arr; // for debug testing
             
             if (nextMove != EndPoint_ID){ // if not arrive the end point
               resultroute_arr_index++; // resultroute arr index ++, so that to have to next index to add the next move
@@ -1001,8 +1037,56 @@
             // if arrive the end point, it's already added to the resultroute array, then end loop
           }
 
-          return resultroute_arr;
+          displayRoute(resultroute_arr);
 
+        }
+
+        function displayRoute(resultroute_arr){
+
+          var resultcoordinates_arr = [];
+
+          for (i=0; i<resultroute_arr.length; i++){
+            resultcoordinates_arr[i] = getCoordinates(resultroute_arr[i]); // use getCoordinates to get the coordinates from id
+          }
+
+          // if the resultroute layer already exists on the map, reset it using setData
+          var geojson = {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: resultcoordinates_arr
+              }
+          }
+
+          if (map.getSource('resultroute')) {
+            map.getSource('resultroute').setData(geojson);
+          }
+          else {
+            map.addLayer({
+                "id": "resultroute",
+                "type": "line",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "properties": {},
+                            "geometry": {
+                                "type": "LineString",
+                                "coordinates": geojson
+                            }
+                        }
+                    },
+                    "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                    },
+                "paint": {
+                "line-color": "#888",
+                "line-width": 8
+                }
+            });
+          }
         }
         
         // this is where the code for the next step will go _Add your route request function
@@ -1058,17 +1142,6 @@
                 }
               });
             }
-            // add turn instructions here at the end
-            // get the sidebar and add the instructions
-            var instructions = document.getElementById('instructions');
-            var steps = data.legs[0].steps;
-
-            var tripInstructions = [];
-            for (var i = 0; i < steps.length; i++) {
-              tripInstructions.push('<br><li>' + steps[i].maneuver.instruction) + '</li>';
-              instructions.innerHTML = '<br><span class="duration">Walking duration: ' + Math.floor(data.duration / 60) + ' min 🚶 </span>' + tripInstructions;
-            }
-              
               
           };
           req.send();
@@ -1143,7 +1216,7 @@
           if (!wid_arr_unsorted.length) return;
 
 
-          var wid_arr = [];
+          wid_arr = [];
           var wid_arr_count = 0;
           while (wid_arr_count < wid_arr_unsorted.length){
             for (i=0; i<wid_arr_unsorted.length; i++ ){
@@ -1159,7 +1232,7 @@
           var nid_arr_unsorted = map.queryRenderedFeatures({layers: ['uco-nid']});
           if (!nid_arr_unsorted.length) return;
 
-          var nid_arr = [];
+          nid_arr = [];
           var nid_arr_count = 0;
           while (nid_arr_count < nid_arr_unsorted.length){
             for (i=0; i<nid_arr_unsorted.length; i++ ){
@@ -1175,7 +1248,7 @@
           var pid_arr_unsorted = map.queryRenderedFeatures({layers: ['uco-pid']});
           if (!pid_arr_unsorted.length) return;
 
-          var pid_arr = [];
+          pid_arr = [];
           var pid_arr_count = 0;
           while (pid_arr_count < pid_arr_unsorted.length){
             for (i=0; i<pid_arr_unsorted.length; i++ ){
@@ -1195,22 +1268,22 @@
           // ------------------------------ get building entrances arrays -----------------------------------
           // ### Buildings 1. MCS, 2. HOH, 3. NUC, 4. STEM, 5. LIB, 6. WEL, (7. VPL)
           // 1. MCS
-          var MCS_warr = [wid_arr[1]];
-          var MCS_narr = [wid_arr[1], nid_arr[1], nid_arr[2]];
+          MCS_warr = [wid_arr[1]];
+          MCS_narr = [wid_arr[1], nid_arr[1], nid_arr[2]];
           // 2. HOH
-          var HOH_warr = [wid_arr[2], wid_arr[3]];
-          var HOH_narr = [wid_arr[2], wid_arr[3], nid_arr[3], nid_arr[4], nid_arr[5]];
+          HOH_warr = [wid_arr[2], wid_arr[3]];
+          HOH_narr = [wid_arr[2], wid_arr[3], nid_arr[3], nid_arr[4], nid_arr[5]];
           // 3. NUC
-          var NUC_warr = [wid_arr[4], wid_arr[5], wid_arr[6], wid_arr[7]];
-          var NUC_narr = [wid_arr[4], wid_arr[5], wid_arr[6], wid_arr[7], nid_arr[6], nid_arr[7], nid_arr[8]];
+          NUC_warr = [wid_arr[4], wid_arr[5], wid_arr[6], wid_arr[7]];
+          NUC_narr = [wid_arr[4], wid_arr[5], wid_arr[6], wid_arr[7], nid_arr[6], nid_arr[7], nid_arr[8]];
           // 4. STEM
-          var STEM_wnar = [wid_arr[8], wid_arr[9], wid_arr[10]];
+          STEM_wnarr = [wid_arr[8], wid_arr[9], wid_arr[10]];
           // 5. LIB
-          var LIB_wnar = [wid_arr[11], wid_arr[12]];
+          LIB_wnarr = [wid_arr[11], wid_arr[12]];
           // 6. WEL
-          var WEL_wnar = [wid_arr[13], wid_arr[14]];
+          WEL_wnarr = [wid_arr[13], wid_arr[14]];
           // (7. VPL)
-          var VPL_wnar = [pid_arr[41]];
+          VPL_wnarr = [pid_arr[41]];
 
 
             
