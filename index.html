@@ -672,10 +672,14 @@
           var WheelchairAccessible = document.querySelector('.WheelchairAccessible').checked; // THIS WORK
 
           var startpointFeature;
-          var endpointFeautre;
+          var endpointFeature;
 
           var startpointisSet = false;
           var endpointisSet = false;
+
+          global_coords_test1 = endpointFeature;
+          global_coords_test2 = endpointisSet;
+          global_coords_test3 = endpoint;
 
           // Check if endpoint is building input, assume one entrance first
           switch(endpoint){
@@ -720,6 +724,7 @@
           }
 
 
+
           // if endpoint is not building input, check entrance input for endpoint
             if (endpointisSet == false){
             if (endpoint.length != 3) return; // if not 3 character  
@@ -744,7 +749,7 @@
             case 'MCS':
               if (WheelchairAccessible == true) {
                 for (i=0; i<MCS_warr.length; i++){
-                  var distStartEnd = getDistance(getID(MCS_warr[i]),getID(endpointFeautre));
+                  var distStartEnd = getDistance(getID(MCS_warr[i]),getID(endpointFeature));
                   if (distStartEnd < minStartDist){
                     minStartDist = distStartEnd;
                     startpointFeature = MCS_warr[i];
@@ -753,7 +758,7 @@
               }
               else {
                 for (i=0; i<MCS_narr.length; i++){
-                  var distStartEnd = getDistance(getID(MCS_narr[i]),getID(endpointFeautre));
+                  var distStartEnd = getDistance(getID(MCS_narr[i]),getID(endpointFeature));
                   if (distStartEnd < minStartDist){
                     minStartDist = distStartEnd;
                     startpointFeature = MCS_narr[i];
@@ -766,7 +771,7 @@
             case 'HOH':
             if (WheelchairAccessible == true) {
                 for (i=0; i<HOH_warr.length; i++){
-                  var distStartEnd = getDistance(getID(HOH_warr[i]),getID(endpointFeautre));
+                  var distStartEnd = getDistance(getID(HOH_warr[i]),getID(endpointFeature));
                   if (distStartEnd < minStartDist){
                     minStartDist = distStartEnd;
                     startpointFeature = HOH_warr[i];
@@ -775,7 +780,7 @@
               }
               else {
                 for (i=0; i<HOH_narr.length; i++){
-                  var distStartEnd = getDistance(getID(HOH_narr[i]),getID(endpointFeautre));
+                  var distStartEnd = getDistance(getID(HOH_narr[i]),getID(endpointFeature));
                   if (distStartEnd < minStartDist){
                     minStartDist = distStartEnd;
                     startpointFeature = HOH_narr[i];
@@ -788,7 +793,7 @@
             case 'NUC':
             if (WheelchairAccessible == true) {
                 for (i=0; i<NUC_warr.length; i++){
-                  var distStartEnd = getDistance(getID(NUC_warr[i]),getID(endpointFeautre));
+                  var distStartEnd = getDistance(getID(NUC_warr[i]),getID(endpointFeature));
                   if (distStartEnd < minStartDist){
                     minStartDist = distStartEnd;
                     startpointFeature = NUC_warr[i];
@@ -797,7 +802,7 @@
               }
               else {
                 for (i=0; i<NUC_narr.length; i++){
-                  var distStartEnd = getDistance(getID(NUC_narr[i]),getID(endpointFeautre));
+                  var distStartEnd = getDistance(getID(NUC_narr[i]),getID(endpointFeature));
                   if (distStartEnd < minStartDist){
                     minStartDist = distStartEnd;
                     startpointFeature = NUC_narr[i];
@@ -809,7 +814,7 @@
             
             case 'STEM':
               for (i=0; i<STEM_wnarr.length; i++){
-                var distStartEnd = getDistance(getID(STEM_wnarr[i]),getID(endpointFeautre));
+                var distStartEnd = getDistance(getID(STEM_wnarr[i]),getID(endpointFeature));
                 if (distStartEnd < minStartDist){
                   minStartDist = distStartEnd;
                   startpointFeature = STEM_wnarr[i];
@@ -820,7 +825,7 @@
             
             case 'LIB':
               for (i=0; i<LIB_wnarr.length; i++){
-                var distStartEnd = getDistance(getID(LIB_wnarr[i]),getID(endpointFeautre));
+                var distStartEnd = getDistance(getID(LIB_wnarr[i]),getID(endpointFeature));
                 if (distStartEnd < minStartDist){
                   minStartDist = distStartEnd;
                   startpointFeature = LIB_wnarr[i];
@@ -831,7 +836,7 @@
 
             case 'WEL':
               for (i=0; i<WEL_wnarr.length; i++){
-                var distStartEnd = getDistance(getID(WEL_wnarr[i]),getID(endpointFeautre));
+                var distStartEnd = getDistance(getID(WEL_wnarr[i]),getID(endpointFeature));
                 if (distStartEnd < minStartDist){
                   minStartDist = distStartEnd;
                   startpointFeature = WEL_wnarr[i];
@@ -869,7 +874,7 @@
             case 'MCS':
               if (WheelchairAccessible == true) {
                 for (i=0; i<MCS_warr.length; i++){
-                  var distEndStart = getDistance(getID(MCS_warr[i]),getID(startpointFeautre));
+                  var distEndStart = getDistance(getID(MCS_warr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
                     minEndDist = distEndStart;
                     endpointFeature = MCS_warr[i];
@@ -878,7 +883,7 @@
               }
               else {
                 for (i=0; i<MCS_narr.length; i++){
-                  var distEndStart = getDistance(getID(MCS_narr[i]),getID(startpointFeautre));
+                  var distEndStart = getDistance(getID(MCS_narr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
                     minEndDist = distEndStart;
                     endpointFeature = MCS_narr[i];
@@ -890,7 +895,7 @@
             case 'HOH':
             if (WheelchairAccessible == true) {
                 for (i=0; i<HOH_warr.length; i++){
-                  var distEndStart = getDistance(getID(HOH_warr[i]),getID(startpointFeautre));
+                  var distEndStart = getDistance(getID(HOH_warr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
                     minEndDist = distEndStart;
                     endpointFeature = HOH_warr[i];
@@ -899,7 +904,7 @@
               }
               else {
                 for (i=0; i<HOH_narr.length; i++){
-                  var distEndStart = getDistance(getID(HOH_narr[i]),getID(startpointFeautre));
+                  var distEndStart = getDistance(getID(HOH_narr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
                     minEndDist = distEndStart;
                     endpointFeature = HOH_narr[i];
@@ -911,7 +916,7 @@
             case 'NUC':
             if (WheelchairAccessible == true) {
                 for (i=0; i<NUC_warr.length; i++){
-                  var distEndStart = getDistance(getID(NUC_warr[i]),getID(startpointFeautre));
+                  var distEndStart = getDistance(getID(NUC_warr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
                     minEndDist = distEndStart;
                     endpointFeature = NUC_warr[i];
@@ -920,7 +925,7 @@
               }
               else {
                 for (i=0; i<NUC_narr.length; i++){
-                  var distEndStart = getDistance(getID(NUC_narr[i]),getID(startpointFeautre));
+                  var distEndStart = getDistance(getID(NUC_narr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
                     minEndDist = distEndStart;
                     endpointFeature = NUC_narr[i];
@@ -931,7 +936,7 @@
             
             case 'STEM':
               for (i=0; i<STEM_wnarr.length; i++){
-                var distEndStart = getDistance(getID(STEM_wnarr[i]),getID(startpointFeautre));
+                var distEndStart = getDistance(getID(STEM_wnarr[i]),getID(startpointFeature));
                 if (distEndStart < minEndDist){
                   minEndDist = distEndStart;
                   endpointFeature = STEM_wnarr[i];
@@ -941,7 +946,7 @@
             
             case 'LIB':
               for (i=0; i<LIB_wnarr.length; i++){
-                var distEndStart = getDistance(getID(LIB_wnarr[i]),getID(startpointFeautre));
+                var distEndStart = getDistance(getID(LIB_wnarr[i]),getID(startpointFeature));
                 if (distEndStart < minEndDist){
                   minEndDist = distEndStart;
                   endpointFeature = LIB_wnarr[i];
@@ -951,7 +956,7 @@
 
             case 'WEL':
               for (i=0; i<WEL_wnarr.length; i++){
-                var distEndStart = getDistance(getID(WEL_wnarr[i]),getID(startpointFeautre));
+                var distEndStart = getDistance(getID(WEL_wnarr[i]),getID(startpointFeature));
                 if (distEndStart < minEndDist){
                   minEndDist = distEndStart;
                   endpointFeature = WEL_wnarr[i];
