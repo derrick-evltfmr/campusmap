@@ -53,7 +53,7 @@
         }
 
         #sidebar {
-          width: 20%;
+          width: 15%;
         }
         
         #header { 
@@ -65,8 +65,8 @@
         #map {
           border-left: 1px solid #fff;
           position: absolute;
-          left: 20%;
-          width: 60%;
+          left: 15%;
+          width: 65%;
           top: 0;
           bottom: 0;
         }
@@ -257,6 +257,56 @@
           transition-duration: 0.4s;
           border: 2px solid #474746;
         }
+
+        /** { box-sizing: border-box; }*/
+        /*body {
+          font: 16px Arial; 
+        }*/
+        .autocomplete {
+          /*the container must be positioned relative:*/
+          position: relative;
+          display: inline-block;
+        }
+        input {
+          border: 1px solid transparent;
+          background-color: #ffffff;
+          padding: 10px;
+          font-size: 16px;
+        }
+        input[type=text] {
+          background-color: #ffffff;
+          width: 100%;
+        }
+        input[type=submit] {
+          background-color: DodgerBlue;
+          color: #fff;
+        }
+        .autocomplete-items {
+          position: absolute;
+          border: 1px solid #d4d4d4;
+          border-bottom: none;
+          border-top: none;
+          z-index: 99;
+          /*position the autocomplete items to be the same width as the container:*/
+          top: 100%;
+          left: 0;
+          right: 0;
+        }
+        .autocomplete-items div {
+          padding: 10px;
+          cursor: pointer;
+          background-color: #fff; 
+          border-bottom: 1px solid #d4d4d4; 
+        }
+        .autocomplete-items div:hover {
+          /*when hovering an item:*/
+          background-color: #e9e9e9; 
+        }
+        .autocomplete-active {
+          /*when navigating through the items using the arrow keys:*/
+          background-color: DodgerBlue !important; 
+          color: #ffffff; 
+        }
         
       /* ################################################## END CSS ################################################## */
     </style>
@@ -278,18 +328,49 @@
         <!--<b><h3>testing field</h3></b>--> 
         <br>
         
-        <b><h3><h>Building Name:</h></h3></b>
+        <!--newly added-->
+        <form autocomplete="off">
+          <b><h3><h>Building Name:</h></h3></b>
+          <div class="autocomplete" style="width:300px;">
+            <input type="text" id="SearchBuilding" placeholder="Building/Location" text=""><br><br>
+          </div>
+          <button onclick="searchBuilding()" >Search</button><br><br><br><br><br><br>
+
+          <b><h>Start Point:</h></b><br>
+          <div class="autocomplete" style="width:300px;">
+            <input type="text" id="StartPoint" placeholder="Start Point">
+          </div>
+          <h></h><br><br>
+          
+          <b><h>End Point:</h></b><br>
+          <div class="autocomplete" style="width:300px;">
+            <input type="text" id="EndPoint" placeholder="End Point"><br>
+          </div>
+          <br><br>
+          <input type='checkbox' class="WheelchairAccessible">Wheelchair Accessible<br><br>
+          <button onclick="calculateRoute()">Navigate</button>
+
+        </form>
+
+
+        <!-- <b><h3><h>Building Name:</h></h3></b>
         <input text=""><br><br>
         <button>Search</button><br>
         <p></p>
-        <br><br>
+        <br><br> 
+    
         <b><h>Start Point:</h></b><br>
         <input type="text" id="StartPoint">
         <h></h><br>
+        
         <b><h>End Point:</h></b><br>
         <input type="text" id="EndPoint"><br>
         <input type='checkbox' class="WheelchairAccessible">Wheelchair Accessible<br><br>
-        <button onclick="calculateRoute()"">Navigate</button>
+        <button onclick="calculateRoute()">Navigate</button>
+      
+          -->
+
+
         
     </div>   
 
@@ -361,6 +442,21 @@
         var LIB_wnarr; // 5. LIB
         var WEL_wnarr; // 6. WEL
         var VPL_wnarr; // 7. VPL
+
+        // --- autoComplete Building List ---
+        var buildinglist = ["Math and Computer Science Building (MCS)", "MCS",
+                            "Howell Hall (HOH)", "HOH",
+                            "Nigh University Center (NUC)", "NUC",
+                            "STEM Building (STEM)", "STEM",
+                            "Chambers Library (LIB)", "LIB",
+                            "Wellness Center (Gym) (WEL)", "WEL",
+                            "Visitor Parking Lot (VPL)", "VPL" ] ;
+        
+
+        autocomplete(document.getElementById("SearchBuilding"), buildinglist);
+        autocomplete(document.getElementById("StartPoint"), buildinglist);
+        autocomplete(document.getElementById("EndPoint"), buildinglist);
+                      
 
         // --- visited table ---
         var visited_table = []; // 1D is ok for marking visited
@@ -683,39 +779,46 @@
 
           // Check if endpoint is building input, assume one entrance first
           switch(endpoint){
+            case 'Math and Computer Science Building (MCS)':
             case 'MCS':
               if (WheelchairAccessible == true) endpointFeature = MCS_warr[0];
               else endpointFeature = MCS_narr[0];
               endpointisSet = true;
               break;
             
+            case 'Howell Hall (HOH)':
             case 'HOH':
               if (WheelchairAccessible == true) endpointFeature = HOH_warr[0];
               else endpointFeature = HOH_narr[0];
               endpointisSet = true;
               break;
 
+            case 'Nigh University Center (NUC)':
             case 'NUC':
               if (WheelchairAccessible == true) endpointFeature = NUC_warr[0];
               else endpointFeature = NUC_narr[0];
               endpointisSet = true;
               break;
             
+            case 'STEM Building (STEM)':
             case 'STEM':
               endpointFeature = STEM_wnarr[0];
               endpointisSet = true;
               break;
             
+            case 'Chambers Library (LIB)':
             case 'LIB':
               endpointFeature = LIB_wnarr[0];
               endpointisSet = true;
               break;
 
+            case 'Wellness Center (Gym) (WEL)':
             case 'WEL':
               endpointFeature = WEL_wnarr[0];
               endpointisSet = true;
               break;
             
+            case 'Visitor Parking Lot (VPL)':
             case 'VPL':
               endpointFeature = VPL_wnarr[0];
               endpointisSet = true;
@@ -746,6 +849,7 @@
           var minStartPointid;
 
           switch(startpoint){
+            case 'Math and Computer Science Building (MCS)':
             case 'MCS':
               if (WheelchairAccessible == true) {
                 for (i=0; i<MCS_warr.length; i++){
@@ -768,6 +872,7 @@
               startpointisSet = true;
               break;
             
+            case 'Howell Hall (HOH)':
             case 'HOH':
             if (WheelchairAccessible == true) {
                 for (i=0; i<HOH_warr.length; i++){
@@ -790,6 +895,7 @@
               startpointisSet = true;
               break;
 
+            case 'Nigh University Center (NUC)':
             case 'NUC':
             if (WheelchairAccessible == true) {
                 for (i=0; i<NUC_warr.length; i++){
@@ -812,6 +918,7 @@
               startpointisSet = true;
               break;
             
+            case 'STEM Building (STEM)':
             case 'STEM':
               for (i=0; i<STEM_wnarr.length; i++){
                 var distStartEnd = getDistance(getID(STEM_wnarr[i]),getID(endpointFeature));
@@ -823,6 +930,7 @@
               startpointisSet = true;
               break;
             
+            case 'Chambers Library (LIB)':
             case 'LIB':
               for (i=0; i<LIB_wnarr.length; i++){
                 var distStartEnd = getDistance(getID(LIB_wnarr[i]),getID(endpointFeature));
@@ -834,6 +942,7 @@
               startpointisSet = true;
               break;
 
+            case 'Wellness Center (Gym) (WEL)':
             case 'WEL':
               for (i=0; i<WEL_wnarr.length; i++){
                 var distStartEnd = getDistance(getID(WEL_wnarr[i]),getID(endpointFeature));
@@ -845,6 +954,7 @@
               startpointisSet = true;
               break;
             
+            case 'Visitor Parking Lot (VPL)':
             case 'VPL':
               startpointFeature = VPL_wnarr[0]; // only 1
               startpointisSet = true;
@@ -871,6 +981,7 @@
           var minEndPointid;
 
           switch(endpoint){
+            case 'Math and Computer Science Building (MCS)':
             case 'MCS':
               if (WheelchairAccessible == true) {
                 for (i=0; i<MCS_warr.length; i++){
@@ -892,6 +1003,7 @@
               }
               break;
             
+            case 'Howell Hall (HOH)':
             case 'HOH':
             if (WheelchairAccessible == true) {
                 for (i=0; i<HOH_warr.length; i++){
@@ -913,6 +1025,7 @@
               }              
               break;
 
+            case 'Nigh University Center (NUC)':
             case 'NUC':
             if (WheelchairAccessible == true) {
                 for (i=0; i<NUC_warr.length; i++){
@@ -934,6 +1047,7 @@
               }              
               break;
             
+            case 'STEM Building (STEM)':
             case 'STEM':
               for (i=0; i<STEM_wnarr.length; i++){
                 var distEndStart = getDistance(getID(STEM_wnarr[i]),getID(startpointFeature));
@@ -944,6 +1058,7 @@
               }
               break;
             
+            case 'Chambers Library (LIB)':
             case 'LIB':
               for (i=0; i<LIB_wnarr.length; i++){
                 var distEndStart = getDistance(getID(LIB_wnarr[i]),getID(startpointFeature));
@@ -954,6 +1069,7 @@
               }              
               break;
 
+            case 'Wellness Center (Gym) (WEL)':
             case 'WEL':
               for (i=0; i<WEL_wnarr.length; i++){
                 var distEndStart = getDistance(getID(WEL_wnarr[i]),getID(startpointFeature));
@@ -964,6 +1080,7 @@
               }              
               break;
             
+            case 'Visitor Parking Lot (VPL)':
             case 'VPL':
               endpointFeature = VPL_wnarr[0]; // only 1
               break;
@@ -1094,7 +1211,109 @@
           }
         }
         
-        // this is where the code for the next step will go _Add your route request function
+        function autocomplete(inp, arr) {
+          /*the autocomplete function takes two arguments,
+          the text field element and an array of possible autocompleted values:*/
+          var currentFocus;
+          /*execute a function when someone writes in the text field:*/
+          inp.addEventListener("input", function(e) {
+              var a, b, i, val = this.value;
+              /*close any already open lists of autocompleted values*/
+              closeAllLists();
+              if (!val) { return false;}
+              currentFocus = -1;
+              /*create a DIV element that will contain the items (values):*/
+              a = document.createElement("DIV");
+              a.setAttribute("id", this.id + "autocomplete-list");
+              a.setAttribute("class", "autocomplete-items");
+              /*append the DIV element as a child of the autocomplete container:*/
+              this.parentNode.appendChild(a);
+              /*for each item in the array...*/
+              for (i = 0; i < arr.length; i++) {
+                /*check if the item starts with the same letters as the text field value:*/
+                if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                  /*create a DIV element for each matching element:*/
+                  b = document.createElement("DIV");
+                  /*make the matching letters bold:*/
+                  b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                  b.innerHTML += arr[i].substr(val.length);
+                  /*insert a input field that will hold the current array item's value:*/
+                  b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                  /*execute a function when someone clicks on the item value (DIV element):*/
+                      b.addEventListener("click", function(e) {
+                      /*insert the value for the autocomplete text field:*/
+                      inp.value = this.getElementsByTagName("input")[0].value;
+                      /*close the list of autocompleted values,
+                      (or any other open lists of autocompleted values:*/
+                      closeAllLists();
+                  });
+                  a.appendChild(b);
+                }
+              }
+            });
+
+            /*execute a function presses a key on the keyboard:*/
+            inp.addEventListener("keydown", function(e) {
+                var x = document.getElementById(this.id + "autocomplete-list");
+                if (x) x = x.getElementsByTagName("div");
+                if (e.keyCode == 40) {
+                  /*If the arrow DOWN key is pressed,
+                  increase the currentFocus variable:*/
+                  currentFocus++;
+                  /*and and make the current item more visible:*/
+                  addActive(x);
+                } else if (e.keyCode == 38) { //up
+                  /*If the arrow UP key is pressed,
+                  decrease the currentFocus variable:*/
+                  currentFocus--;
+                  /*and and make the current item more visible:*/
+                  addActive(x);
+                } else if (e.keyCode == 13) {
+                  /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                  e.preventDefault();
+                  if (currentFocus > -1) {
+                    /*and simulate a click on the "active" item:*/
+                    if (x) x[currentFocus].click();
+                  }
+                }
+            });
+
+            function addActive(x) {
+              /*a function to classify an item as "active":*/
+              if (!x) return false;
+              /*start by removing the "active" class on all items:*/
+              removeActive(x);
+              if (currentFocus >= x.length) currentFocus = 0;
+              if (currentFocus < 0) currentFocus = (x.length - 1);
+              /*add class "autocomplete-active":*/
+              x[currentFocus].classList.add("autocomplete-active");
+            }
+
+            function removeActive(x) {
+              /*a function to remove the "active" class from all autocomplete items:*/
+              for (var i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+              }
+            }
+
+            function closeAllLists(elmnt) {
+              /*close all autocomplete lists in the document,
+              except the one passed as an argument:*/
+              var x = document.getElementsByClassName("autocomplete-items");
+              for (var i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != inp) {
+                x[i].parentNode.removeChild(x[i]);
+              }
+            }
+        }
+        /*execute a function when someone clicks in the document:*/
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+
+
+        /*// this is where the code for the next step will go _Add your route request function
         // create a function to make a directions request
         function getRoute(end) {
           // make a directions request using cycling profile
@@ -1151,7 +1370,7 @@
           };
           req.send();
         }
-
+        */
 
         // ############################## Load Event Listener: MAP INITIALIZE EVENT ##############################
         map.on('load', function() {
