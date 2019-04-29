@@ -443,6 +443,12 @@
         var WEL_wnarr; // 6. WEL
         var VPL_wnarr; // 7. VPL
 
+        // --- promote building arr to global level ---
+        var buildings = [];
+
+        // --- global level to store the current pop up focus feature
+        var currentPopUpFocusFeature;
+
         // --- autoComplete Building List ---
         var buildinglist = ["Math and Computer Science Building (MCS)", "MCS",
                             "Howell Hall (HOH)", "HOH",
@@ -659,6 +665,8 @@
           // Check if there is already a popup on the map and if so, remove it
           if (popUps[0]) popUps[0].remove();
 
+          currentPopUpFocusFeature = currentFeature; // for set start / end point purpose
+
           var imageSrc;
           var textDescription;
           if (currentFeature.properties.Name == "Visitor Parking Lot"){
@@ -696,10 +704,73 @@
             .setHTML('<h3>' + currentFeature.properties.Name + '</h3>' +
               '<img src ='+ imageSrc+ ' width=180 height=150>' +
               textDescription +
-              '<button class="popupbutton">Set As Start Point</button>'+ '<button class="popupbutton">Set As End Point&nbsp;</button')
+              '<button class="popupbutton" onClick="setTextAtStartPoint()">Set As Start Point</button>'+ 
+              '<button class="popupbutton" onClick="setTextAtEndPoint()">Set As End Point&nbsp;</button>')
             .addTo(map);
         }
         
+        function setTextAtStartPoint(){
+          var startpoint_text = currentPopUpFocusFeature.properties.Name;
+          if (startpoint_text == "Visitor Parking Lot") startpoint_text = "Visitor Parking Lot (VPL)"; // handle the data not corresponding
+
+          document.getElementById("StartPoint").value = startpoint_text;
+
+        }
+
+        function setTextAtEndPoint(){
+          var endpoint_text =  currentPopUpFocusFeature.properties.Name;
+          if (endpoint_text == "Visitor Parking Lot") endpoint_text = "Visitor Parking Lot (VPL)"; // handle the data not corresponding
+
+          document.getElementById("EndPoint").value = endpoint_text;
+        }
+
+        function searchBuilding(){
+          var searchbuilding_input = document.getElementById("SearchBuilding").value;
+          var targetBuilding;
+
+          switch(searchbuilding_input){ // convert the short form to completed form
+            case "MCS":
+              searchbuilding_input = "Math and Computer Science Building (MCS)";
+              break;
+
+            case "HOH":
+              searchbuilding_input = "Howell Hall (HOH)";
+              break;
+
+            case "NUC":
+              searchbuilding_input = "Nigh University Center (NUC)";
+              break;
+
+            case "STEM":
+              searchbuilding_input = "STEM Building (STEM)";
+              break;
+
+            case "LIB":
+              searchbuilding_input = "Chambers Library (LIB)";
+              break;
+
+            case "WEL":
+              searchbuilding_input = "Wellness Center (Gym) (WEL)";
+              break;
+
+            case "VPL":
+            case "Visitor Parking Lot (VPL)":
+              searchbuilding_input = "Visitor Parking Lot";             // handle the data not corresponding
+              break;
+            
+          }
+
+          for (i=0; i<buildings.length; i++){
+            if (buildings[i].properties.Name == searchbuilding_input){
+              targetBuilding = buildings[i];
+            }
+          }
+
+          flyToStore(targetBuilding);
+          createPopUp(targetBuilding);
+
+
+        }
         
         function getID(currentFeature){ // feature of wid/nid/pid => id
           var currentFeatureProp = currentFeature.properties;
@@ -1204,8 +1275,8 @@
                     "line-cap": "round"
                     },
                 "paint": {
-                "line-color": "#888",
-                "line-width": 8
+                "line-color": "#617da5", // original #888, #657ba0
+                "line-width": 5.5
                 }
             });
           }
@@ -1412,7 +1483,7 @@
             return;
           }
           
-          var buildings = [];
+          // var buildings = []; // declared in global level
           var j=0;
           var notOK = false;
           
@@ -1518,29 +1589,29 @@
           //getRoute(start);
 
           // Add starting point to the map
-          map.addLayer({
-            id: 'point',
-            type: 'circle',
-            source: {
-              type: 'geojson',
-              data: {
-                type: 'FeatureCollection',
-                features: [{
-                  type: 'Feature',
-                  properties: {},
-                  geometry: {
-                    type: 'Point',
-                    coordinates: start
-                  }
-                }
-                ]
-              }
-            },
-            paint: {
-              'circle-radius': 4, //start point radius
-              'circle-color': '#3887be' //start point color
-            }
-          });
+          // map.addLayer({
+          //   id: 'point',
+          //   type: 'circle',
+          //   source: {
+          //     type: 'geojson',
+          //     data: {
+          //       type: 'FeatureCollection',
+          //       features: [{
+          //         type: 'Feature',
+          //         properties: {},
+          //         geometry: {
+          //           type: 'Point',
+          //           coordinates: start
+          //         }
+          //       }
+          //       ]
+          //     }
+          //   },
+          //   paint: {
+          //     'circle-radius': 4, //start point radius
+          //     'circle-color': '#3887be' //start point color
+          //   }
+          // });
 
 
 
