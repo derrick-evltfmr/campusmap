@@ -449,6 +449,9 @@
         // --- global level to store the current pop up focus feature
         var currentPopUpFocusFeature;
 
+        // --- global level start point for pick move when calculateRoute() start [because pickMove is only called in calculateRoute()]
+        var startpointid_forPickMove;
+
         // --- autoComplete Building List ---
         var buildinglist = ["Math and Computer Science Building (MCS)", "MCS",
                             "Howell Hall (HOH)", "HOH",
@@ -510,12 +513,12 @@
         MarkLinkedArray(112,[53,111]);
         MarkLinkedArray(113,[109,114]);
         MarkLinkedArray(114,[55,113,121]);
-        MarkLinkedArray(115,[3,106,116,117,119]);
+        MarkLinkedArray(115,[3,106,116,117,119,120]);
         MarkLinkedArray(116,[54,115]);
         MarkLinkedArray(117,[115,120]);
         MarkLinkedArray(118,[106,119,129]);
         MarkLinkedArray(119,[106,115,118,120,130]);
-        MarkLinkedArray(120,[5,117,119,121]);
+        MarkLinkedArray(120,[5,115,117,119,121]);
         MarkLinkedArray(121,[4,55,114,120,122]);
         MarkLinkedArray(122,[121,123,124]);
         MarkLinkedArray(123,[122,124,125,146,151]);
@@ -904,6 +907,7 @@
             case 'NUC':
               if (WheelchairAccessible == true) endpointFeature = NUC_warr[0];
               else endpointFeature = NUC_narr[0];
+
               endpointisSet = true;
               break;
             
@@ -1021,6 +1025,7 @@
                     startpointFeature = NUC_narr[i];
                   }
                 }
+
               }
               startpointisSet = true;
               break;
@@ -1129,6 +1134,7 @@
                     endpointFeature = HOH_narr[i];
                   }
                 }
+
               }              
               break;
 
@@ -1144,6 +1150,7 @@
                 }
               }
               else {
+
                 for (i=0; i<NUC_narr.length; i++){
                   var distEndStart = getDistance(getID(NUC_narr[i]),getID(startpointFeature));
                   if (distEndStart < minEndDist){
@@ -1151,6 +1158,9 @@
                     endpointFeature = NUC_narr[i];
                   }
                 }
+
+
+
               }              
               break;
             
@@ -1194,6 +1204,15 @@
               
           }
 
+          // special case: optimization for NUC and HOH
+          if ((startpoint == 'NUC' || startpoint == 'Nigh University Center (NUC)') 
+            && (endpoint == 'HOH' || endpoint == 'Howell Hall (HOH)') && !WheelchairAccessible ) startpointFeature = convertID(4);
+
+          if ((startpoint == 'HOH' || startpoint == 'Howell Hall (HOH)') 
+            && (endpoint == 'NUC' || endpoint == 'Nigh University Center (NUC)') && !WheelchairAccessible ) endpointFeature = convertID(4); 
+
+
+
           // startpointFeature = MCS_narr[1]; //n01
           // endpointFeature = NUC_warr[1]; //w05
 
@@ -1206,7 +1225,8 @@
           var adjacentnodes_arr = linked_2D_array[currentpoint_id];
           var minDistToEndPoint= Math.pow(2,32)-1; // infinity
           var minDistNodeid;
-          
+          var WheelchairAccessible = document.querySelector('.WheelchairAccessible').checked;
+
           // for each node in adjacent nodes array
           for (i=0; i < adjacentnodes_arr.length; i++){ 
             if (visited_table[adjacentnodes_arr[i]]==false){ // visited_table[each adjacent node id] == false, if the node is unvisited
@@ -1217,6 +1237,12 @@
 
               }
 
+              if (adjacentnodes_arr[i]==110 && (endpoint_id !=53 && startpointid_forPickMove!=53)) continue; // if not going to/from n03, don't go down stairs to p10
+
+              if (WheelchairAccessible == true) { // extra check for wheelchair accesible
+                  if (adjacentnodes_arr[i]==122 || adjacentnodes_arr[i]==56 || adjacentnodes_arr[i]==58) continue; // not going through these points that can't access
+                  if ((adjacentnodes_arr[i]==156 || adjacentnodes_arr[i]==150 || adjacentnodes_arr[i]==123) && endpoint_id == 4) continue; // from LIB to NUC, not turning around the lake
+              }
 
               if (getDistance(adjacentnodes_arr[i], endpoint_id) < minDistToEndPoint){ // if the distance between the node and endpoint is the minimum dist
                 minDistToEndPoint = getDistance(adjacentnodes_arr[i], endpoint_id); // then minDist = this node dist
@@ -1233,6 +1259,8 @@
           var startendpoint_arr = setAsStartPointEndPoint();
           var startpointFeature = startendpoint_arr[0];
           var endpointFeature = startendpoint_arr[1];
+
+          startpointid_forPickMove = getID(startpointFeature);
 
           // decalre a resultroute arr;
           var resultroute_arr = [];
