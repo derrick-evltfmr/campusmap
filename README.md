@@ -17,7 +17,7 @@ so there are no plans for continuing to update the buildings and locations data 
 ![](https://i.imgur.com/6tixxAr.jpg)
 
 
-## - With the building information popupbox, the user can set the buildings as the start point or end point without typing
+## - With the building information popupbox, the user can set the buildings as the start point or end point without typing in the building names
 ![](https://i.imgur.com/YyYBsvf.jpg)
 
 
