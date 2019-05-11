@@ -1,7 +1,7 @@
 # UCO campusmap
 campusmap is web project for UCO's visitors, students, staff to find the information of the buildings (OR locations) 
 and do the navigation between the spots in the campus.
-There is also an option for the wheelchair user, with the checkbox option, the navigation will consider the whether the entrances are wheelchair accessible and avoid some speial cases such as stairs.
+There is also an option for the wheelchair user, with the checkbox option, the navigation will consider whether the entrances are wheelchair accessible and avoid some speial cases such as stairs.
 
 (This project is mainly for class demo purpose, 
 so there are no plans for continuing to update the buildings and locations data so far.)
